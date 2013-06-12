@@ -1,12 +1,14 @@
 DBLike
 ======
-DBLike is a file backup and sync service programmed in node.js that can be used to create your own file cloud.
+
+DBLike is a file backup and sync service programmed in node.js that can be used
+to create your own file cloud.
 
 Requirements
-============
+------------
 
-High priority
--------------
+### High priority ###
+
 - Client has a folder that syncs with the server
   - Any changes in local files should automatically be updated on server
   - Any changes on server should automatically be synced with local folder
@@ -16,31 +18,61 @@ High priority
 - More than one clients should be able to update a file
 - If a server crashes it should be able to recover without a problem
 
-Not High priority
------------------
+### Not High priority ###
 - Updates should be incremental
 - If two clients are on a local network, they should be able to sync locally
 
 
 Design
-======
+------
 
-Use EC2 API to Autoscale
+### Sync Algorithm ###
 
-How do we handle last update times?
-- Sync signal to client or Client requests updates?
+- Persistent connection to the server
+- Async updates to all clients (with same user) for each file uploaded
+- On connect send timestamp of last change and receive all updates since then
+- Last sync time for folder is stored
+- Last modified time on server is used to figure out whether to replace
+  or create a different version
 
-Server has a database with user details
+### Time Sync ###
+- Use epoch time
+- Server sends its times in response 
+- Client stores time difference from server and uses it in time related
+  calucations
 
-What kind of redundancy should be used?
-- Three copies on different servers or RAID?
-- How to sync between servers
+### Incremental Updates ###
 
-Client
-- Configuration
-- Authentication
-- Sync daemon
+#### Proposal 1 ####
+Use rsync algorithm: [rsync-node](https://github.com/ttezel/anchor) rync
+over http using node
 
-Handling writes by multiple clients
-- create different versions & notify user to merge
+#### Proposal 2 ####
+- Keep diffs for last n changes on for every user on server
+- Send diffs patches to client instead of complete file
+- Do the same on client
 
+### Server Setup Script ###
+- Create EC2 instances and setup all required software
+
+### Server database ###
+- MySQL with list of users
+
+### Multiple servers ###
+- Multiple servers have a copy of the same data
+- Number of servers can be configured, AWS API can be used to create
+  instances
+
+### How sync between servers ###
+- Async syncronization similar to client server
+- Double writes create different versions 
+
+### Configuration file ###
+- Create a yaml config file for client and server
+
+### Authentication ###
+- Extensible library to support differnt authentications
+- Use HTTP Basic for a start
+
+### Procol ###
+- Use a REST API 
