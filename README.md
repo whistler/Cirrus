@@ -46,6 +46,7 @@ Design
 #### Proposal 1 ####
 Use rsync algorithm: [rsync-node](https://github.com/ttezel/anchor) rync
 over http using node
+[Rsync Algorithm](http://www.samba.org/~tridge/phd_thesis.pdf)
 
 #### Proposal 2 ####
 - Keep diffs for last n changes on for every user on server
@@ -66,6 +67,7 @@ over http using node
 ### How sync between servers ###
 - Async syncronization similar to client server
 - Double writes create different versions 
+- Multicast??
 
 ### Configuration file ###
 - Create a yaml config file for client and server
