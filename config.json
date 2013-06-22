@@ -1,5 +1,5 @@
 {
-  "host": "localhost",
+  "host": "http://localhost:31588",
   "port": 31588,
   "directory": "/Users/ibrahim/dblike"
 }
