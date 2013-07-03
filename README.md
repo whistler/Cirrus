@@ -2,7 +2,7 @@ DBLike
 ======
 
 DBLike is a file backup and sync service programmed in node.js that can be used
-to create your own file cloud.
+to create your own file cloud. [Why not to use Dropbox?](http://dumpdropbox.com/)
 
 Requirements
 ------------
@@ -28,8 +28,9 @@ Design
 
 ### Sync Algorithm ###
 
-- Persistent connection to the server
-- Async updates to all clients (with same user) for each file uploaded
+- Persistent Websocket connection to the server
+- Async events to all clients (with same user) for each file uploaded
+- Client asks for files using HTTP
 - On connect send timestamp of last change and receive all updates since then
 - Last sync time for folder is stored
 - Last modified time on server is used to figure out whether to replace
@@ -55,6 +56,7 @@ over http using node
 
 ### Server Setup Script ###
 - Create EC2 instances and setup all required software
+- Create AWS script to set up load balancing
 
 ### Server database ###
 - MySQL with list of users
@@ -70,11 +72,11 @@ over http using node
 - Multicast??
 
 ### Configuration file ###
-- Create a yaml config file for client and server
+- Create a json config file for client and server
 
 ### Authentication ###
 - Extensible library to support differnt authentications
-- Use HTTP Basic for a start
+- Use simple auth for a start
 
-### Procol ###
+### Protocol ###
 - Use a REST API 

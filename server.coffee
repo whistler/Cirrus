@@ -1,18 +1,24 @@
 # load configuration file
-config = require('nconf')
-config.use('file', { file: './server-config.json' })
-config.load()
+config = require('./config/server')
 
 # http server for updates
-app = require('express')()
+express = require('express')
+app = express.createServer()
 server = require('http').Server(app)
+
+app.use(express.bodyParser());
 
 app.get('/', (req, res) -> 
   res.send('Hello world!')
 )
 
+app.post('/*', (req, res) ->
+  debugger;
+  console.log("Got:" + JSON.stringify(req.params))
+)
+
 # start server
-server.listen(config.get("port"))
+server.listen(config.port)
 console.log("Listening...")
 
 # persistent connection for events
