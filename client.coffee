@@ -4,7 +4,7 @@
 config = require('./config/client')
 
 # persistent connection
-socket = require('socket.io-client')(config.host)
+socket = require('socket.io-client')("http://" + config.host + ":" + config.port)
 
 socket.on('connect', () ->
   console.log('connected')
@@ -20,24 +20,8 @@ socket.on('connect', () ->
   )
 )
 
-# http connection for updates
-client = require('http')
-address = "http://" + config.host + ":" + config.port
-console.log(address)
-client.get(address, (res)->
-  output = ''
-  res.on('data', (data)->
-    output += data
-  )
-  res.on('end', ()->
-    console.log(output)
-  )
-).on('error', (e)->
-  console.log("Error: " + e.message)
-)
-
 # synchronizer
-synchronizer = require('./synchronizer')(client)
+synchronizer = require('./synchronizer')(socket)
 
 # start watching directory
 watcher = require('./watcher')(synchronizer)

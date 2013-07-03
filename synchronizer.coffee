@@ -3,7 +3,7 @@ path = require('path')
 # load configuration file
 config = require('./config/client')
 
-Syncronizer = (net) ->
+Syncronizer = (io) ->
   
   create: (file) ->
     #PUT
@@ -11,7 +11,7 @@ Syncronizer = (net) ->
 
   update: (file) ->
     #POST
-    update_file(file,net)
+    update_file(file,io)
 
   remove: (file) ->
     #DELETE
@@ -20,35 +20,12 @@ Syncronizer = (net) ->
 module.exports = Syncronizer
 
 
-update_file = (file,net) ->
+update_file = (file,io) ->
   watchdir = path.normalize(config.directory)
-  console.log(watchdir)
   absfile = path.join(watchdir,file)
-  console.log(absfile)
-  fs.readFile(absfile, "utf8", (err,data) ->
-    console.log("Update " + file)
-    console.log(data)
-    console.log(err) if err
-    post_options =
-      host: config.host,
-      port: config.port,
-      path: path.join('/user/', file),
-      method: 'POST',
-      headers: [
-         'Content-Type': 'application/x-www-form-urlencoded',
-         'Content-Length': data.length]
+  ss = require('socket.io-stream')
 
-    console.log(post_options)
-    post_req = net.request(post_options, (res) ->
-      res.setEncoding('utf8')
-      res.on('data', (chunk) ->
-        console.log('Response: ' + chunk)
-      )
-      res.on('error', (err) ->
-        console.log("Error: " + err)
-      )
-    )
+  stream = ss.createStream()
 
-    post_req.write(data)
-    post_req.end()
-  )
+  ss(io).emit('update', stream, {name: file})
+  fs.createReadStream(absfile).pipe(stream)

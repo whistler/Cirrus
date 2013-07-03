@@ -1,4 +1,5 @@
 {
   "host": "localhost",
-  "port": 31588
+  "port": 31588,
+  "filestore": "./filestore"
 }
