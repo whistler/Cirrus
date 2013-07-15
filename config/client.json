@@ -2,5 +2,6 @@
   "host": "localhost",
   "port": 31588,
   "directory": "/Users/ibrahim/dblike",
-  "username": "ibrahim"
+  "username": "ibrahim",
+  "password": "simple"
 }

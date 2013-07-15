@@ -27,5 +27,5 @@ update_file = (file,io) ->
 
   stream = ss.createStream()
 
-  ss(io).emit('update', stream, {name: file})
+  ss(io).emit('update', stream, {name: file, token: global.auth_token})
   fs.createReadStream(absfile).pipe(stream)

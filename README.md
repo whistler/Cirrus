@@ -29,8 +29,7 @@ Design
 ### Sync Algorithm ###
 
 - Persistent Websocket connection to the server
-- Async events to all clients (with same user) for each file uploaded
-- Client asks for files using HTTP
+- Async events to clients for each file creation, change and deletion
 - On connect send timestamp of last change and receive all updates since then
 - Last sync time for folder is stored
 - Last modified time on server is used to figure out whether to replace
@@ -59,7 +58,7 @@ over http using node
 - Create AWS script to set up load balancing
 
 ### Server database ###
-- MySQL with list of users
+- Json file with list of users
 
 ### Multiple servers ###
 - Multiple servers have a copy of the same data
