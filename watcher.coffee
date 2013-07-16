@@ -1,6 +1,8 @@
 config = require './config/client'
 path = require 'path'
-directory = path.normalize(config.directory)
+directory = config.directory.replace(/^~/,process.env['HOME'])
+directory = path.normalize(directory)
+console.log directory
 
 Watcher = (synchronizer) ->
 

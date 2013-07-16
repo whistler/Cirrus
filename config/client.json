@@ -1,7 +1,7 @@
 {
   "host": "localhost",
   "port": 31588,
-  "directory": "/Users/ibrahim/dblike",
+  "directory": "~/dblike",
   "username": "ibrahim",
   "password": "simple",
   "servers": ["server1", "server2", "server3"],
