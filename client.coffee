@@ -3,10 +3,8 @@
 # load configuration file
 try
   config = require('./config/client')
-
-  # persistent connection
   socket = require('socket.io-client')("http://" + config.host + ":" + config.port)
-  global.auth_token = ""
+  stream = require('socket.io-stream')
   
   socket.on('connect', () ->
   
@@ -38,3 +36,5 @@ try
 catch e
   console.trace(e)
   
+fetch_updates = () ->
+  socket.emit('fetch_updates', {since: config.last_update_time})

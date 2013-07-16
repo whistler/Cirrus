@@ -2,4 +2,5 @@
   "host": "localhost",
   "port": 31588,
   "filestore": "./filestore"
+  "servers": ["server2", "server3"]
 }

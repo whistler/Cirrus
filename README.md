@@ -1,7 +1,7 @@
-DBLike
+Cirrus
 ======
 
-DBLike is a file backup and sync service programmed in node.js that can be used
+Cirrus is a file backup and sync service programmed in node.js that can be used
 to create your own file cloud. [Why not to use Dropbox?](http://dumpdropbox.com/)
 
 Requirements
@@ -55,20 +55,16 @@ over http using node
 
 ### Server Setup Script ###
 - Create EC2 instances and setup all required software
-- Create AWS script to set up load balancing
 
 ### Server database ###
 - Json file with list of users
 
 ### Multiple servers ###
 - Multiple servers have a copy of the same data
-- Number of servers can be configured, AWS API can be used to create
-  instances
 
 ### How sync between servers ###
 - Async syncronization similar to client server
 - Double writes create different versions 
-- Multicast??
 
 ### Configuration file ###
 - Create a json config file for client and server
@@ -76,6 +72,3 @@ over http using node
 ### Authentication ###
 - Extensible library to support differnt authentications
 - Use simple auth for a start
-
-### Protocol ###
-- Use a REST API 

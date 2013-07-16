@@ -1,7 +1,7 @@
+config = require('./config/client')
 fs = require('fs')
 path = require('path')
-# load configuration file
-config = require('./config/client')
+iostream = require('socket.io-stream')
 
 Syncronizer = (io) ->
   
@@ -20,12 +20,10 @@ Syncronizer = (io) ->
 module.exports = Syncronizer
 
 
-update_file = (file,io) ->
+update_file = (file,socket) ->
   watchdir = path.normalize(config.directory)
   absfile = path.join(watchdir,file)
-  ss = require('socket.io-stream')
 
-  stream = ss.createStream()
-
-  ss(io).emit('update', stream, {name: file, token: global.auth_token})
+  stream = iostream.createStream()
+  iostream(socket).emit('update', stream, {name: file, token: global.auth_token})
   fs.createReadStream(absfile).pipe(stream)
