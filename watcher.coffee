@@ -1,6 +1,7 @@
 config = require './config/client'
 path = require 'path'
-directory = config.directory.replace(/^~/,process.env['HOME'])
+util = require './util'
+directory = util.expand(config.directory)
 directory = path.normalize(directory)
 console.log directory
 

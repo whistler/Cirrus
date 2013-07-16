@@ -3,6 +3,15 @@ config = require('./config/server')
 auth = require('./auth')
 fs = require('fs')
 
+# check if filestore exists
+fs.exists(config.filestore, (exists) ->
+  if exists
+    console.log('Storing files in ' + config.filestore)
+  else
+    console.log('Error ' + config.filestore + ' does not exist')
+    process.exit(-1)
+)
+
 # persistent connection for events
 socket = require('socket.io')(config.port)
 console.log("Listening...")
