@@ -1,10 +1,8 @@
-# DB LIKE CLIENT
-
-# load configuration file
-
+global.app = "client"
 global.config = require('./config/client')
+Common = require './common'
+
 socket = require('socket.io-client')("http://" + global.config.host + ":" + global.config.port)
-stream = require('socket.io-stream')
 
 # synchronizer
 synchronizer = require('./synchronizer')(socket)

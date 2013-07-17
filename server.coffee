@@ -1,15 +1,10 @@
-ss = require('socket.io-stream')
-path = require('path')
-fs = require('fs')
-
+global.app = 'server'
 global.config = require('./config/server')
-auth = require('./auth')
-util = require('./util')
+Common = require './common'
 
 sockets = {}
 
-# check if filestore exists
-fs.exists(global.config.filestore, (exists) ->
+Common.fs.exists(global.config.filestore, (exists) ->
   if exists
     console.log('Storing files in ' + global.config.filestore)
   else
@@ -26,7 +21,7 @@ socket.on('connection', (socket) ->
 
   socket.on('auth', (data) ->
     console.log(data)
-    token = auth.authenticate(data['username'], data['password'])
+    token = Common.auth.authenticate(data['username'], data['password'])
     if token
       sockets[socket] = data['username']
       socket.emit('token', token) 
@@ -34,11 +29,11 @@ socket.on('connection', (socket) ->
       socket.emit('unauthorized')
   )
 
-  ss(socket).on('update', (stream, data) ->
-    if (user = auth.valid(data.token))
-      filename = path.join(global.config.filestore,user,path.basename(data.name))
-      util.ensure_folder_exists(path.join(global.config.filestore,user))
-      stream.pipe(fs.createWriteStream(filename))
+  Common.stream(socket).on('update', (stream, data) ->
+    if (user = Common.auth.valid(data.token))
+      filename = Common.path.join(global.config.filestore, user, Common.path.basename(data.name))
+      Common.util.ensure_folder_exists(Common.path.join(global.config.filestore, user))
+      stream.pipe(Common.fs.createWriteStream(filename))
     else
       socket.emit('unauthorized')
   )

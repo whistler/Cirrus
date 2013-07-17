@@ -10,3 +10,5 @@ TODO LIST
 [ ] Server should be able to sync with other servers
 [ ] Client should store the time of the last updated time
 [ ] Client should try connecting to a different server on disconnect
+[ ] File conflicts should create two versions
+

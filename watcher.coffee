@@ -1,26 +1,26 @@
-path = require 'path'
-util = require './util'
+Common = require './common'
 
-directory = util.expand(global.config.directory)
-directory = path.normalize(directory)
+watcher = require('watch')
+
+directory = Common.util.expand(global.config.directory)
+directory = Common.path.normalize(directory)
 
 Watcher = (synchronizer) ->
 
   try
-    watcher = require('watch')
     watcher.createMonitor(directory, (monitor) ->
 
       monitor.on("created", (file, stat) ->
         console.log(file + " created")
-        synchronizer.create(relative_path(file))
+        synchronizer.create(relative_path(file), stat)
       )
       monitor.on("changed", (file, curr, prev) ->
         console.log(file + " changed")
-        synchronizer.update(relative_path(file))
+        synchronizer.update(relative_path(file), stat)
       )
       monitor.on("removed", (file, stat) ->
         console.log(file + " removed")
-        synchronizer.remove(relative_path(file))
+        synchronizer.remove(relative_path(file), stat)
       )
     )
   catch
@@ -32,4 +32,4 @@ Watcher = (synchronizer) ->
 module.exports = Watcher
 
 relative_path = (file) ->
-  return path.relative(directory, file)
+  return Common.path.relative(directory, file)

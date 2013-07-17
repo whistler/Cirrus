@@ -1,49 +1,43 @@
-config = require('./config/client')
-fs = require('fs')
-path = require('path')
-util = require('./util')
-iostream = require('socket.io-stream')
-walk = require('walk')
+Common = require './common'
 
-Syncronizer = (io) ->
+Syncronizer = (socket) ->
   
-  create: (file) ->
-    #PUT
+  create: (file, stat) ->
+    update_file(file, socket, stat.mtime)
     console.log("Create " + file)
 
-  update: (file) ->
-    #POST
-    update_file(file,io)
+  update: (file, stat) ->
+    update_file(file, socket, stat.mtime)
 
-  remove: (file) ->
-    #DELETE
+  remove: (file, stat) ->
     console.log("Delete" + file)
     
   update_since: () ->
-    directory = util.expand(config.directory)
-    files_updated_since(config.last_updated,directory, io)
+    directory = Common.util.expand(config.directory)
+    console.log(global.config.last_updated)
+    files_updated_since(global.config.last_updated,directory, socket)
 
 module.exports = Syncronizer
 
 
 update_file = (file,socket, mtime) ->
-  watchdir = util.expand(config.directory)
-  absfile = path.join(watchdir,file)
+  watchdir = Common.util.expand(config.directory)
+  absfile = Common.path.join(watchdir,file)
   
-  stream = iostream.createStream()
-  iostream(socket).emit('update', stream, {name: file, token: global.auth_token})
-  fs.createReadStream(absfile).pipe(stream)
-  config.last_updated = mtime
-  util.save_config(config)
+  stream = Common.stream.createStream()
+  Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token})
+  Common.fs.createReadStream(absfile).pipe(stream)
+  global.config.last_updated = mtime
+  Common.util.save_config(global.config)
   console.log(absfile)  
 # timestamps being stored in GMT
 
-server_files_updated_since = (timestamp,user, socket) ->
-  directory = path.join(config.filestore,user)
+server_files_updated_since = (timestamp, user, socket) ->
+  directory = Common.path.join(global.config.filestore,user)
   files_updated_since(timestamp,directory,socket)
   
 files_updated_since = (timestamp,directory,socket) ->
-  walker = walk.walk(directory,{followLinks: false})
+  walker = Common.walk.walk(directory,{followLinks: false})
   timestamp = new Date(timestamp)
   console.log(timestamp)
   walker.on('file', (root,stat,next)->
