@@ -2,5 +2,9 @@
   "host": "localhost",
   "port": 31588,
   "filestore": "./filestore",
-  "servers": ["server2", "server3"]
+  "servers": [
+    "server2",
+    "server3"
+  ],
+  "last_updated": "2013-07-17T19:56:47.000Z"
 }

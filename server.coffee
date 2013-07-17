@@ -13,10 +13,10 @@ Common.fs.exists(global.config.filestore, (exists) ->
 )
 
 # persistent connection for events
-socket = require('socket.io')(global.config.port)
+socketio = require('socket.io')(global.config.port)
 console.log("Listening...")
 
-socket.on('connection', (socket) ->
+socketio.on('connection', (socket) ->
   console.log("connected")
 
   socket.on('auth', (data) ->
@@ -24,7 +24,7 @@ socket.on('connection', (socket) ->
     token = Common.auth.authenticate(data['username'], data['password'])
     if token
       sockets[socket] = data['username']
-      socket.emit('token', token) 
+      socket.emit('token', token)
     else 
       socket.emit('unauthorized')
   )
@@ -41,5 +41,14 @@ socket.on('connection', (socket) ->
   socket.on('disconnect', ()->
     delete sockets[socket]
   )
-  
+ 
+  socket.on('update_since', (params) ->
+    if user = Common.auth.valid(params.token)
+      synchronizer = require('./synchronizer')(socket)
+      directory = Common.path.join(global.config.filestore, user)
+      console.log(directory)
+      synchronizer.update_since(params.last_updated, directory)
+    else
+      socket.emit('unauthorized')
+  )
 )

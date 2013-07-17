@@ -7,7 +7,8 @@ socket = require('socket.io-client')("http://" + global.config.host + ":" + glob
 # synchronizer
 synchronizer = require('./synchronizer')(socket)
 # start watching directory
-watcher = require('./watcher')(synchronizer)
+directory = Common.util.expand(global.config.directory)
+watcher = require('./watcher')(synchronizer, directory)
 
 socket.on('connect', () ->
 
@@ -31,9 +32,9 @@ socket.on('connect', () ->
   socket.on('token', (tok)->
     global.auth_token = tok
     console.log(tok)
-    synchronizer.update_since()
+    synchronizer.update_since(global.config.last_updated, Common.util.expand(global.config.directory))
+    socket.emit('update_since', {'last_updated': global.config.last_updated, 'token' : global.auth_token})
   )
-  
 )
   
 fetch_updates = () ->

@@ -2,27 +2,25 @@ Common = require './common'
 
 Syncronizer = (socket) ->
   
-  create: (file, stat) ->
-    update_file(file, socket, stat.mtime)
+  create: (file, stat, basepath) ->
+    update_file(file, socket, stat.mtime, basepath)
     console.log("Create " + file)
 
-  update: (file, stat) ->
-    update_file(file, socket, stat.mtime)
+  update: (file, stat, basepath) ->
+    update_file(file, socket, stat.mtime, basepath)
 
-  remove: (file, stat) ->
+  remove: (file, stat, basepath) ->
     console.log("Delete" + file)
     
-  update_since: () ->
-    directory = Common.util.expand(config.directory)
-    console.log(global.config.last_updated)
-    files_updated_since(global.config.last_updated,directory, socket)
+  update_since: (timestamp, directory) ->
+    files_updated_since(timestamp, directory, socket)
 
 module.exports = Syncronizer
 
-
-update_file = (file,socket, mtime) ->
-  watchdir = Common.util.expand(config.directory)
-  absfile = Common.path.join(watchdir,file)
+# file: relative path of file
+# basepath: path where file is stored
+update_file = (file, socket, mtime, basepath) ->
+  absfile = Common.path.join(basepath,file)
   
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token})
@@ -31,16 +29,12 @@ update_file = (file,socket, mtime) ->
   Common.util.save_config(global.config)
   console.log(absfile)  
 # timestamps being stored in GMT
-
-server_files_updated_since = (timestamp, user, socket) ->
-  directory = Common.path.join(global.config.filestore,user)
-  files_updated_since(timestamp,directory,socket)
   
-files_updated_since = (timestamp,directory,socket) ->
+files_updated_since = (timestamp, directory,socket) ->
   walker = Common.walk.walk(directory,{followLinks: false})
   timestamp = new Date(timestamp)
   console.log(timestamp)
   walker.on('file', (root,stat,next)->
-    update_file(stat.name, socket, stat.mtime) if stat.mtime > timestamp
+    update_file(stat.name, socket, stat.mtime, directory) if stat.mtime > timestamp
     next()
   )

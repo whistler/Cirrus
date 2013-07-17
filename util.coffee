@@ -11,8 +11,8 @@ exports.expand = (directory) ->
   
 exports.save_config = (config) ->
   data = JSON.stringify(config,null,2);
-
-  fs.writeFile('./config/client.json', data, (err) ->
+  app = global.app
+  fs.writeFile('./config/'+app+'.json', data, (err) ->
     if err
       console.log('There has been an error saving your configuration data.')
       console.log(err.message)
