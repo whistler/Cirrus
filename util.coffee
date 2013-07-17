@@ -9,7 +9,6 @@ exports.ensure_folder_exists = (dir) ->
 exports.expand = (directory) ->
   directory.replace(/^~/,process.env['HOME'])
   
-
 exports.save_config = (config) ->
   data = JSON.stringify(config,null,2);
 

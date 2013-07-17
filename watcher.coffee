@@ -1,9 +1,8 @@
-config = require './config/client'
 path = require 'path'
 util = require './util'
-directory = util.expand(config.directory)
+
+directory = util.expand(global.config.directory)
 directory = path.normalize(directory)
-console.log directory
 
 Watcher = (synchronizer) ->
 
@@ -28,7 +27,7 @@ Watcher = (synchronizer) ->
     console.log("Error reading directory: " + config.directory + 
       ". Make sure it exists.")
 
-  console.log("Watching " + config.directory + "...")
+  console.log("Watching " + global.config.directory + "...")
 
 module.exports = Watcher
 
