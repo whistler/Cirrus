@@ -21,20 +21,21 @@ Syncronizer = (io) ->
     
   update_since: () ->
     directory = util.expand(config.directory)
-    console.log(directory)
     files_updated_since(config.last_updated,directory, io)
 
 module.exports = Syncronizer
 
 
-update_file = (file,socket) ->
+update_file = (file,socket, mtime) ->
   watchdir = util.expand(config.directory)
   absfile = path.join(watchdir,file)
-  console.log("wd " + watchdir + " abfil: " + absfile + " file:" + file)
   
   stream = iostream.createStream()
   iostream(socket).emit('update', stream, {name: file, token: global.auth_token})
   fs.createReadStream(absfile).pipe(stream)
+  config.last_updated = mtime
+  util.save_config(config)  
+
 
 server_files_updated_since = (timestamp,user, socket) ->
   directory = path.join(config.filestore,user)
@@ -45,8 +46,8 @@ files_updated_since = (timestamp,directory,socket) ->
   timestamp = new Date(timestamp)
   console.log(timestamp)
   walker.on('file', (root,stat,next)->
-    update_file(stat.name, socket) if stat.mtime > timestamp
+    update_file(stat.name, socket, stat.mtime) if stat.mtime > timestamp
     next()
   )
 
-files_updated_since(new Date("July 16, 2013 17:12:00"),"./filestore/")
+#files_updated_since(new Date("July 16, 2013 17:12:00"),"./filestore/")

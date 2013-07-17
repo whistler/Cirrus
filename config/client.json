@@ -4,6 +4,10 @@
   "directory": "~/dblike",
   "username": "ibrahim",
   "password": "simple",
-  "servers": ["server1", "server2", "server3"],
-  "last_updated": "July 16, 2013 16:12:00"
+  "servers": [
+    "server1",
+    "server2",
+    "server3"
+  ],
+  "last_updated": "2013-07-17T00:05:01.000Z"
 }
