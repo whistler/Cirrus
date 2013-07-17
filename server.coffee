@@ -4,6 +4,8 @@ auth = require('./auth')
 fs = require('fs')
 util = require('./util')
 
+sockets = {}
+
 # check if filestore exists
 fs.exists(config.filestore, (exists) ->
   if exists
@@ -26,7 +28,8 @@ socket.on('connection', (socket) ->
   socket.on('auth', (data) ->
     console.log(data)
     token = auth.authenticate(data['username'], data['password'])
-    if token 
+    if token
+      sockets[socket] = data['username']
       socket.emit('token', token) 
     else 
       socket.emit('unauthorized')
@@ -40,6 +43,10 @@ socket.on('connection', (socket) ->
       stream.pipe(fs.createWriteStream(filename))
     else
       socket.emit('unauthorized')
+  )
+  
+  socket.on('disconnect', ()->
+    delete sockets[socket]
   )
   
 )

@@ -30,7 +30,6 @@ module.exports = Syncronizer
 update_file = (file,socket) ->
   watchdir = util.expand(config.directory)
   absfile = path.join(watchdir,file)
-  console.log("wd " + watchdir + " abfil: " + absfile + " file:" + file)
   
   stream = iostream.createStream()
   iostream(socket).emit('update', stream, {name: file, token: global.auth_token})
@@ -48,5 +47,3 @@ files_updated_since = (timestamp,directory,socket) ->
     update_file(stat.name, socket) if stat.mtime > timestamp
     next()
   )
-
-files_updated_since(new Date("July 16, 2013 17:12:00"),"./filestore/")
