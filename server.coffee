@@ -2,6 +2,7 @@
 config = require('./config/server')
 auth = require('./auth')
 fs = require('fs')
+util = require('./util')
 
 # check if filestore exists
 fs.exists(config.filestore, (exists) ->
@@ -33,7 +34,8 @@ socket.on('connection', (socket) ->
 
   ss(socket).on('update', (stream, data) ->
     if (user = auth.valid(data.token))
-      filename = path.join(config.filestore,path.basename(data.name))
+      filename = path.join(config.filestore,user,path.basename(data.name))
+      util.ensure_folder_exists(path.join(config.filestore,user))
       console.log(filename)
       stream.pipe(fs.createWriteStream(filename))
     else
