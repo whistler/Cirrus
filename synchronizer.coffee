@@ -34,8 +34,9 @@ update_file = (file,socket, mtime) ->
   iostream(socket).emit('update', stream, {name: file, token: global.auth_token})
   fs.createReadStream(absfile).pipe(stream)
   config.last_updated = mtime
-  util.save_config(config)  
-
+  util.save_config(config)
+  console.log(absfile)  
+# timestamps being stored in GMT
 
 server_files_updated_since = (timestamp,user, socket) ->
   directory = path.join(config.filestore,user)
