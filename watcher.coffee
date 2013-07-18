@@ -2,6 +2,8 @@ Common = require './common'
 
 watcher = require('watch')
 
+# Watches file in 'directory' and notifies 'synchronizer' of
+# any changes to files
 Watcher = (synchronizer, directory) ->
 
   try

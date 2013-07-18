@@ -1,10 +1,14 @@
+# Module to authenticate users on the server. The authenticate
+# method is called first which returns a token. This token is 
+# sent to the server on subsequent calls to the server. 
+
 users = require './config/users'
 crypto = require 'crypto'
 tokens = {}
 
+# Check if user password combination is correct and 
+# returns token, false if incorrect combination
 exports.authenticate = (user, password) ->
-  # Check if user password combination is correct and 
-  # returns token, false if incorrect combination
   pwd = users[user]
   if pwd == password
     token = generate_token(user, password)
@@ -14,14 +18,15 @@ exports.authenticate = (user, password) ->
     console.log("Failed Authentication: " + user)
     false
 
+# Returns user if token is correct, false otherwise
 exports.valid = (token) ->
-  # Returns user if token is correct, false otherwise
   user = tokens[token]
   if user
     user
   else
     console.log("Invalid token: "+ token)
 
+# Generates auth token from username and password
 generate_token = (user, password) ->
   crypto.createHash("sha")
     .update(user+password+Date.now())

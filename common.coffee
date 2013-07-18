@@ -1,3 +1,4 @@
+# Common objects required throughout the application
 Common = {}
 
 if global.app == "server"

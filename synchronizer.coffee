@@ -1,5 +1,6 @@
 Common = require './common'
 
+# Sends updates to the other end of the socket
 Syncronizer = (socket) ->
   
   create: (file, stat, basepath) ->
@@ -17,20 +18,23 @@ Syncronizer = (socket) ->
 
 module.exports = Syncronizer
 
-# file: relative path of file
-# basepath: path where file is stored
+# Send a file update to socket
+#   file: relative path of file
+#   basepath: path where file is stored
+#   mtime: time the file was modified
 update_file = (file, socket, mtime, basepath) ->
   absfile = Common.path.join(basepath,file)
   
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token})
   Common.fs.createReadStream(absfile).pipe(stream)
-  global.config.last_updated = mtime
+  global.config.last_updated = mtime # timestamps being stored in GMT
   Common.util.save_config(global.config)
   console.log(absfile)  
-# timestamps being stored in GMT
   
-files_updated_since = (timestamp, directory,socket) ->
+# Finds files in 'directory' updated after 'timestamp' and
+# sends them to 'socket'
+files_updated_since = (timestamp, directory, socket) ->
   walker = Common.walk.walk(directory,{followLinks: false})
   timestamp = new Date(timestamp)
   console.log(timestamp)
