@@ -6,7 +6,6 @@ Common = require './common'
 sockets = {} # stores socket ids and usernames as key values
 
 synchronizer = require('./server_synchronizer')
-console.log(global.config.filestore)
 watcher = require('./watcher')(synchronizer, global.config.filestore)
 
 # check if filestore is a valid location
@@ -23,7 +22,7 @@ global.socketio = require('socket.io').listen(global.config.port, {'log':false})
 console.log("Listening...")
 
 global.socketio.on('connection', (socket) ->
-  console.log("connected")
+  console.log("Connected: " + socket.id)
 
   # authenticate user
   socket.on('auth', (params) ->

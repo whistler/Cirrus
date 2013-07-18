@@ -2,7 +2,7 @@
   "directory": "~/dblike",
   "username": "ibrahim",
   "password": "simple",
-  "current_server": 2,
+  "current_server": 0,
   "servers": [
     {
       "server": "server0",
@@ -20,5 +20,5 @@
       "port": 31588
     }
   ],
-  "last_updated": "2013-07-18T07:31:09.000Z"
+  "last_updated": "2013-07-18T21:44:46.000Z"
 }

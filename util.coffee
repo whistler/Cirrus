@@ -1,7 +1,7 @@
 # Helper functions that don't go elsewhere
 
-Common = require './common'
 mkdirp = require('mkdirp')
+fs = require 'fs'
 
 # Creates a path if it does not exist already
 exports.ensure_folder_exists = (dir) ->
@@ -15,14 +15,12 @@ exports.expand = (directory) ->
 
 # Saves configuration to disk
 exports.save_config = (config) ->
-  data = JSON.stringify(config,null,2);
-  app = global.app
+  data = JSON.stringify(config,null,2)
   
   # The config file that needs to be overwritten is just client. Not saving timestamp on server side
-  Common.fs.writeFile('./config/'+app+'.json', data, (err) ->
+  fs.writeFile('./config/client.json', data, (err) ->
     if err
-      console.log('There has been an error saving your configuration data.')
-      console.log(err.message)
-      return
+      console.log('There has been an error saving your configuration data.' + err.message)
+    else
       console.log('Configuration saved successfully.')
   )

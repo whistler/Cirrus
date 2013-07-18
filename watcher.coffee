@@ -1,7 +1,7 @@
 Common = require './common'
 
 watcher = require('watch')
-
+debug = false
 # Watches file in 'directory' and notifies 'synchronizer' of
 # any changes to files
 Watcher = (synchronizer, directory) ->
@@ -15,15 +15,15 @@ Watcher = (synchronizer, directory) ->
     watcher.createMonitor(directory, (monitor) ->
 
       monitor.on("created", (file, stat) ->
-        console.log(file + " created")
+        console.log(file + " created") if debug
         synchronizer.create(relative_path(file), stat, directory)
       )
       monitor.on("changed", (file, curr, prev) ->
-        console.log(file + " changed " + curr)
+        console.log(file + " changed " + curr) if debug
         synchronizer.update(relative_path(file), curr, directory)
       )
       monitor.on("removed", (file, stat) ->
-        console.log(file + " removed")
+        console.log(file + " removed") if debug
         synchronizer.remove(relative_path(file), stat, directory)
       )
     )

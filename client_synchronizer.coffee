@@ -5,7 +5,6 @@ socket = null
 
 exports.create = (file, stat, basepath) ->
   update_file(file, stat.mtime, basepath)
-  console.log("Create " + file)
 
 exports.update = (file, stat, basepath) ->
   update_file(file, stat.mtime, basepath)
@@ -24,14 +23,14 @@ exports.set_socket = (sock) ->
 #   basepath: path where file is stored
 #   mtime: time the file was modified
 update_file = (file, mtime, basepath) ->
+  console.log("Uploading: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token}) 
   Common.fs.createReadStream(absfile).pipe(stream)
   
   global.config.last_updated = mtime # timestamps being stored in GMT
-  #Common.util.save_config(global.config)
-  console.log(absfile)  
+  Common.util.save_config(global.config)
   
 # Finds files in 'directory' updated after 'timestamp' and
 # sends them to 'socket'

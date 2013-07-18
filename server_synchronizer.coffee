@@ -6,7 +6,6 @@ sockets = {}
 exports.create = (file, stat, basepath) ->
   user = find_user(file)
   update_file(file, stat.mtime, basepath, user)
-  console.log("Create " + file)
 
 exports.update = (file, stat, basepath) ->
   user = find_user(file)
@@ -54,24 +53,12 @@ find_user = (file) ->
 #   mtime: time the file was modified
 update_file = (file, mtime, basepath, user) ->
   absfile = Common.path.join(basepath,file)
-  # sockets = find_sockets(file)
-  # console.log(JSON.stringify(sockets))
   sockets = global.socketio.sockets.in(user)
   socks = for socket in sockets
     stream = Common.stream.createStream()
-    # console.log(socket_id)  
-    # if global.app == "client"
-    #   socket = global.socketio
-    # else
-    #   socket = global.socketio.clients(socket_id)
-    #socket = get_socket(socket_id)
-    console.log(socket)
     Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token}) 
     Common.fs.createReadStream(absfile).pipe(stream)
-  
-  global.config.last_updated = mtime # timestamps being stored in GMT
-  #Common.util.save_config(global.config)
-  console.log(absfile)  
+    console.log "Sending " + file + " to " + user + " on socket " + socket.id
   
 # Finds files in 'directory' updated after 'timestamp' and
 # sends them to 'socket'

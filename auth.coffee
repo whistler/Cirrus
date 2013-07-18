@@ -15,7 +15,7 @@ exports.authenticate = (user, password) ->
     tokens[token] = user
     token
   else
-    console.log("Failed Authentication: " + user)
+    console.log("[AUTH] Authentication Failed: " + user)
     false
 
 # Returns user if token is correct, false otherwise
@@ -24,7 +24,7 @@ exports.valid = (token) ->
   if user
     user
   else
-    console.log("Invalid token: "+ token)
+    console.log("[AUTH] Invalid Token: "+ token)
 
 # Generates auth token from username and password
 generate_token = (user, password) ->
