@@ -4,17 +4,19 @@ Common = require './common'
 sockets = {}
 
 exports.create = (file, stat, basepath) ->
-  update_file(file, stat.mtime, basepath)
+  user = find_user(file)
+  update_file(file, stat.mtime, basepath, user)
   console.log("Create " + file)
 
 exports.update = (file, stat, basepath) ->
-  update_file(file, stat.mtime, basepath)
+  user = find_user(file)
+  update_file(file, stat.mtime, basepath, user)
 
 exports.remove = (file, stat, basepath) ->
   console.log("Delete" + file)
     
-exports.update_since = (timestamp, directory) ->
-  files_updated_since(timestamp, directory)
+exports.update_since = (timestamp, directory, user) ->
+  files_updated_since(timestamp, directory, user)
   
 exports.new_connection = (socket, user) ->
   sockets[socket.id] = user
@@ -54,7 +56,6 @@ update_file = (file, mtime, basepath, user) ->
   absfile = Common.path.join(basepath,file)
   # sockets = find_sockets(file)
   # console.log(JSON.stringify(sockets))
-  console.log(file)
   sockets = global.socketio.sockets.in(user)
   socks = for socket in sockets
     stream = Common.stream.createStream()
@@ -80,6 +81,7 @@ files_updated_since = (timestamp, directory, user) ->
   timestamp = new Date(timestamp)
   # for every update in file the timestamp to be stored in config should be modified time of director not files
   walker.on('file', (root,stat,next)->
-    if stat.mtime > timestamp then update_file(stat.name, stat.mtime, directory, user) 
+    if stat.mtime > timestamp
+      update_file(stat.name, stat.mtime, directory, user) 
     next()
   )

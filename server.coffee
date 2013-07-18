@@ -4,7 +4,10 @@ global.config = require('./config/server')
 Common = require './common'
 
 sockets = {} # stores socket ids and usernames as key values
+
 synchronizer = require('./server_synchronizer')
+console.log(global.config.filestore)
+watcher = require('./watcher')(synchronizer, global.config.filestore)
 
 # check if filestore is a valid location
 Common.fs.exists(global.config.filestore, (exists) ->

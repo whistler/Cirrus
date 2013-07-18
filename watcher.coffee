@@ -31,6 +31,6 @@ Watcher = (synchronizer, directory) ->
     console.log("Error reading directory: " + global.config.directory + 
       ". Make sure it exists.")
 
-  console.log("Watching " + global.config.directory + "...")
+  console.log("Watching " + directory + "...")
 
 module.exports = Watcher
