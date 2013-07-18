@@ -5,7 +5,11 @@ watcher = require('watch')
 # Watches file in 'directory' and notifies 'synchronizer' of
 # any changes to files
 Watcher = (synchronizer, directory) ->
-
+  
+  # returns path of file relative to 'directory'
+  relative_path = (file) ->
+    return Common.path.relative(directory, file)
+    
   try
     directory = Common.path.normalize(directory)
     watcher.createMonitor(directory, (monitor) ->
@@ -30,6 +34,3 @@ Watcher = (synchronizer, directory) ->
   console.log("Watching " + global.config.directory + "...")
 
 module.exports = Watcher
-
-relative_path = (file) ->
-  return Common.path.relative(directory, file)
