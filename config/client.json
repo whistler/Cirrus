@@ -1,13 +1,24 @@
 {
-  "host": "localhost",
-  "port": 31588,
   "directory": "~/dblike",
   "username": "ibrahim",
   "password": "simple",
+  "current_server": 0,
   "servers": [
-    "server1",
-    "server2",
-    "server3"
+    {
+      "server": "server0",
+      "host": "localhost",
+      "port": 31588
+    },
+    {
+      "server": "server1",
+      "host": "localhost",
+      "port": 31588
+    },
+    {
+      "server": "server2",
+      "host": "localhost",
+      "port": 31588
+    }
   ],
-  "last_updated": "2013-07-18T00:23:13.000Z"
+  "last_updated": "2013-07-18T05:10:54.000Z"
 }

@@ -24,21 +24,18 @@ module.exports = Syncronizer
 #   mtime: time the file was modified
 update_file = (file, socket, mtime, basepath) ->
   absfile = Common.path.join(basepath,file)
-  
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token})
   Common.fs.createReadStream(absfile).pipe(stream)
   global.config.last_updated = mtime # timestamps being stored in GMT
   Common.util.save_config(global.config)
-  console.log(absfile)  
   
 # Finds files in 'directory' updated after 'timestamp' and
 # sends them to 'socket'
 files_updated_since = (timestamp, directory, socket) ->
   walker = Common.walk.walk(directory,{followLinks: false})
   timestamp = new Date(timestamp)
-  console.log(timestamp)
   walker.on('file', (root,stat,next)->
-    update_file(stat.name, socket, stat.mtime, directory) if stat.mtime > timestamp
+    if stat.mtime > timestamp then update_file(stat.name, socket, stat.mtime, directory)
     next()
   )

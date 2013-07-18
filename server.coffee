@@ -41,13 +41,10 @@ socketio.on('connection', (socket) ->
     else
       socket.emit('unauthorized')
   )
-  
-  socket.on('close', () ->
-#      socket.emit('close')
-  )
 
+# client gets disconnected
   socket.on('disconnect', () ->
-    console.log('server disconnected')
+    console.log( sockets[socket] + ' disconnected')   #:does not work if more than 2 users login:
     delete sockets[socket]
   )
  
@@ -56,7 +53,6 @@ socketio.on('connection', (socket) ->
     if user = Common.auth.valid(params.token)
       synchronizer = require('./synchronizer')(socket)
       directory = Common.path.join(global.config.filestore, user)
-      console.log(directory)
       synchronizer.update_since(params.since, directory)
     else
       socket.emit('unauthorized')
