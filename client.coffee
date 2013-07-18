@@ -18,16 +18,20 @@ socket.on('connect', () ->
   socket.emit('auth', {username: global.config.username, password: global.config.password})
 )
 
-socket.on('disconnect', ()->
-  console.log('Server Disconnected')
-)
-
-socket.on('error', (err)->
+next_server = () ->
   if ++global.config.current_server==global.config.servers.length
     global.config.current_server = 0
   Common.util.save_config(global.config)
+
+socket.on('disconnect', ()->
+  console.log('Server Disconnected')
+  next_server()
+)
+
+socket.on('error', (err)->
   console.log(err)
   console.log("TODO: Try to reconnect after timeout")
+  next_server()
 )
 
 # Event triggered if username/password or token provided was invalid
