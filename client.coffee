@@ -6,8 +6,8 @@ Common = require './common'
 
 # Connect to server
 socket = require('socket.io-client')("http://" + global.config.host + ":" + global.config.port)
-
-synchronizer = require('./synchronizer')(socket) # sends updates to server
+global.socketio = socket
+synchronizer = require('./synchronizer') # sends updates to server
 # start watching directory
 directory = Common.util.expand(global.config.directory)
 watcher = require('./watcher')(synchronizer, directory)
@@ -18,6 +18,7 @@ socket.on('connect', () ->
   socket.emit('auth', {username: global.config.username, password: global.config.password})
   
   socket.on('disconnect', ()->
+    synchronizer.disconnected(socket)
     console.log('Disconnected :(')
   )
   
@@ -36,6 +37,7 @@ socket.on('connect', () ->
   socket.on('authenticated', (token)->
     global.auth_token = token
     console.log("Successfully logged in!")
+    synchronizer.new_connection(socket, global.config.username)
     synchronizer.update_since(global.config.last_updated, Common.util.expand(global.config.directory))
     socket.emit('fetch_updates', {'since': global.config.last_updated, 'token' : global.auth_token})
   )

@@ -4,6 +4,7 @@ global.config = require('./config/server')
 Common = require './common'
 
 sockets = {} # stores socket ids and usernames as key values
+synchronizer = require('./synchronizer')
 
 # check if filestore is a valid location
 Common.fs.exists(global.config.filestore, (exists) ->
@@ -14,20 +15,21 @@ Common.fs.exists(global.config.filestore, (exists) ->
     process.exit(-1)
 )
 
-# List for clients
-socketio = require('socket.io')(global.config.port)
+# Listen for clients
+global.socketio = require('socket.io')(global.config.port)
 console.log("Listening...")
 
-socketio.on('connection', (socket) ->
+global.socketio.on('connection', (socket) ->
   console.log("connected")
 
   # authenticate user
   socket.on('auth', (params) ->
     token = Common.auth.authenticate(params.username, params.password)
-    if token
+    if token # successfully logged in
       sockets[socket] = params.username
       socket.emit('authenticated', token)
       console.log(params.username + " logged in")
+      synchronizer.new_connection(socket, params.username)
     else 
       socket.emit('unauthorized')
   )
@@ -43,13 +45,12 @@ socketio.on('connection', (socket) ->
   )
   
   socket.on('disconnect', () ->
-    delete sockets[socket]
+    synchronizer.disconnected(socket)
   )
  
   # provide client all updates since last update
   socket.on('fetch_updates', (params) ->
     if user = Common.auth.valid(params.token)
-      synchronizer = require('./synchronizer')(socket)
       directory = Common.path.join(global.config.filestore, user)
       console.log(directory)
       synchronizer.update_since(params.since, directory)
