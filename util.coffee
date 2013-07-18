@@ -17,10 +17,12 @@ exports.expand = (directory) ->
 exports.save_config = (config) ->
   data = JSON.stringify(config,null,2);
   app = global.app
-  fs.writeFile('./config/'+app+'.json', data, (err) ->
+  
+  # The config file that needs to be overwritten is just client. Not saving timestamp on server side
+  fs.writeFile('./config/client.json', data, (err) ->
     if err
       console.log('There has been an error saving your configuration data.')
       console.log(err.message)
       return
-    console.log('Configuration saved successfully.')
+      console.log('Configuration saved successfully.')
   )
