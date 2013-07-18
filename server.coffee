@@ -4,7 +4,7 @@ global.config = require('./config/server')
 Common = require './common'
 
 sockets = {} # stores socket ids and usernames as key values
-synchronizer = require('./synchronizer')
+synchronizer = require('./server_synchronizer')
 
 # check if filestore is a valid location
 Common.fs.exists(global.config.filestore, (exists) ->
@@ -29,6 +29,7 @@ global.socketio.on('connection', (socket) ->
       sockets[socket] = params.username
       socket.emit('authenticated', token)
       console.log(params.username + " logged in")
+      socket.join(params.username)
       synchronizer.new_connection(socket, params.username)
     else 
       socket.emit('unauthorized')
@@ -53,7 +54,7 @@ global.socketio.on('connection', (socket) ->
   socket.on('fetch_updates', (params) ->
     if user = Common.auth.valid(params.token)
       directory = Common.path.join(global.config.filestore, user)
-      synchronizer.update_since(params.since, directory)
+      synchronizer.update_since(params.since, directory, user)
     else
       socket.emit('unauthorized')
   )

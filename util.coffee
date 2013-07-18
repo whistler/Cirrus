@@ -1,6 +1,6 @@
 # Helper functions that don't go elsewhere
 
-require './common'
+Common = require './common'
 mkdirp = require('mkdirp')
 
 # Creates a path if it does not exist already

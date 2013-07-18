@@ -46,34 +46,40 @@ find_user = (file) ->
   matches = regex.exec(file)
   matches[1]
 
-
 # Send a file update to socket
 #   file: relative path of file
 #   basepath: path where file is stored
 #   mtime: time the file was modified
-update_file = (file, mtime, basepath) ->
+update_file = (file, mtime, basepath, user) ->
   absfile = Common.path.join(basepath,file)
-  sockets = find_sockets(file)
-  console.log(JSON.stringify(sockets))
-  socks = for socket_id in sockets
+  # sockets = find_sockets(file)
+  # console.log(JSON.stringify(sockets))
+  console.log(file)
+  sockets = global.socketio.sockets.in(user)
+  socks = for socket in sockets
     stream = Common.stream.createStream()
-    console.log(socket_id)
-    socket = global.socketio.sockets(socket_id)
+    # console.log(socket_id)  
+    # if global.app == "client"
+    #   socket = global.socketio
+    # else
+    #   socket = global.socketio.clients(socket_id)
+    #socket = get_socket(socket_id)
     console.log(socket)
     Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token}) 
     Common.fs.createReadStream(absfile).pipe(stream)
   
   global.config.last_updated = mtime # timestamps being stored in GMT
-  Common.util.save_config(global.config)
+  #Common.util.save_config(global.config)
   console.log(absfile)  
   
 # Finds files in 'directory' updated after 'timestamp' and
 # sends them to 'socket'
-files_updated_since = (timestamp, directory) ->
+files_updated_since = (timestamp, directory, user) ->
+  console.log directory
   walker = Common.walk.walk(directory,{followLinks: false})
   timestamp = new Date(timestamp)
   # for every update in file the timestamp to be stored in config should be modified time of director not files
   walker.on('file', (root,stat,next)->
-    if stat.mtime > timestamp then update_file(stat.name, stat.mtime, directory) 
+    if stat.mtime > timestamp then update_file(stat.name, stat.mtime, directory, user) 
     next()
   )
