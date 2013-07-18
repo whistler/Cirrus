@@ -5,8 +5,8 @@
   "dependencies": {
     "nconf": "*",
     "watch": "*",
-    "socket.io": "https://github.com/LearnBoost/socket.io/tarball/master",
-    "socket.io-client": "https://github.com/LearnBoost/socket.io-client/tarball/master",
+    "socket.io": "0.9.16",
+    "socket.io-client": "0.9.16",
     "socket.io-stream": "*",
     "walk": "*",
     "mkdirp": "*"

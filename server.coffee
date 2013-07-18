@@ -15,7 +15,7 @@ Common.fs.exists(global.config.filestore, (exists) ->
 )
 
 # List for clients
-socketio = require('socket.io')(global.config.port)
+socketio = require('socket.io').listen(global.config.port, {'log':false})
 console.log("Listening...")
 
 socketio.on('connection', (socket) ->
@@ -42,7 +42,12 @@ socketio.on('connection', (socket) ->
       socket.emit('unauthorized')
   )
   
+  socket.on('close', () ->
+#      socket.emit('close')
+  )
+
   socket.on('disconnect', () ->
+    console.log('server disconnected')
     delete sockets[socket]
   )
  
