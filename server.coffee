@@ -3,7 +3,7 @@ global.app = 'server'
 global.config = require('./config/server')
 Common = require './common'
 
-sockets = {} # stores socket ids and usernames as key values
+global.socket = null
 
 synchronizer = require('./server_synchronizer')
 watcher = require('./watcher')(synchronizer, global.config.filestore)
@@ -28,10 +28,10 @@ global.socketio.on('connection', (socket) ->
   socket.on('auth', (params) ->
     token = Common.auth.authenticate(params.username, params.password)
     if token # successfully logged in
-      sockets[socket] = params.username
       socket.emit('authenticated', token)
       console.log(params.username + " logged in")
       socket.join(params.username)
+      global.socket = socket # TODO: delete
       synchronizer.new_connection(socket, params.username)
     else 
       socket.emit('unauthorized')

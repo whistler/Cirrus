@@ -7,7 +7,7 @@
     "watch": "*",
     "socket.io": "0.9.16",
     "socket.io-client": "0.9.16",
-    "socket.io-stream": "*",
+    "socket.io-stream": "0.3.1",
     "walk": "*",
     "mkdirp": "*"
   }

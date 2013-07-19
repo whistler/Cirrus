@@ -52,8 +52,11 @@ find_user = (file) ->
 #   basepath: path where file is stored
 #   mtime: time the file was modified
 update_file = (file, mtime, basepath, user) ->
+  console.log "Sending " + file + " to " + user
   absfile = Common.path.join(basepath,file)
-  sockets = global.socketio.sockets.in(user)
+  #sockets = global.socketio.sockets.in(user)['sockets']
+  sockets = [global.socket]
+  console.log(sockets)
   socks = for socket in sockets
     stream = Common.stream.createStream()
     Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token}) 

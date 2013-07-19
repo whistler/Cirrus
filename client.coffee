@@ -17,6 +17,17 @@ watcher = require('./watcher')(synchronizer, directory)
 socket.on('connect', () ->
   console.log('Connected to Server! ' + global.serv.server)
   socket.emit('auth', {username: global.config.username, password: global.config.password})
+  
+  # recieve file updates from client
+  Common.stream(socket).on('update', (stream, params) ->
+    console.log('Downloading ' + params.name)
+    filename = Common.path.join(Common.util.expand(global.config.directory), params.name)
+    path = Common.path.dirname(filename)
+    Common.util.ensure_folder_exists(path)
+    stream.pipe(Common.fs.createWriteStream(filename))
+    console.log('Downloading ' + params.name)
+  )
+
 )
 
 next_server = () ->
@@ -48,4 +59,3 @@ socket.on('authenticated', (token)->
   synchronizer.update_since(global.config.last_updated, Common.util.expand(global.config.directory))
   socket.emit('fetch_updates', {'since': global.config.last_updated, 'token' : global.auth_token})
 )
-
