@@ -2,7 +2,7 @@
   "directory": "~/dblike",
   "username": "ibrahim",
   "password": "simple",
-  "current_server": 0,
+  "current_server": 1,
   "servers": [
     {
       "server": "server0",

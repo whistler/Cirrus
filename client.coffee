@@ -46,7 +46,7 @@ socket.on('error', (err)->
 
 # Send file that server requests
 socket.on('get', (params) ->
-  file_path = Common.path.join(global.config.directory, params.file)
+  file_path = Common.path.join(Common.util.expand(global.config.directory), params.file)
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {name: params.file, token: global.auth_token}) 
   Common.fs.createReadStream(file_path).pipe(stream)
@@ -61,8 +61,9 @@ socket.on('unauthorized', ()->
 
 # sends list of files in directory to sever
 socket.on('fetch_list', (params) ->
+  console.log('Sending list to server')
   path = config.directory
-  Common.util.directory(path, (files)
+  Common.util.directory(path, (files) ->
     socket.emit('list', {list:files, token: global.auth_token})
   )
 )
@@ -73,5 +74,5 @@ socket.on('authenticated', (token)->
   console.log("Successfully logged in!")
   #synchronizer.update_since(global.config.last_updated, Common.util.expand(global.config.directory))
   #socket.emit('fetch_updates', {'since': global.config.last_updated, 'token' : global.auth_token})
-  socket.emit('get', {'token':token, file:'hi'})
+  #socket.emit('get', {'token':token, file:'hi'})
 )

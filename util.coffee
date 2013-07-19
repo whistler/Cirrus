@@ -1,7 +1,10 @@
 # Helper functions that don't go elsewhere
 
-mkdirp = require('mkdirp')
+util = require './util'
+mkdirp = require 'mkdirp'
 fs = require 'fs'
+walk = require 'walk'
+path = require 'path'
 
 # Creates a path if it does not exist already
 exports.ensure_folder_exists = (dir) ->
@@ -26,14 +29,14 @@ exports.save_config = (config) ->
   )
 
 # Callsback with a list of files in `path` with their last modified times
-exports.directory = (path, callback) =>
-  path = Common.util.expand(path)
+exports.directory = (dir_path, callback) =>
+  dir_path = util.expand(dir_path)
   files = {}
-  walker = Common.walk.walk(path,{followLinks: false})
+  walker = walk.walk(dir_path,{followLinks: false})
   
-  walker.on('file', (root,stat,next)->
-    dir = Common.path.relative(path, root)
-    file = Common.path.join(dir,stat.name)
+  walker.on('file', (root,stat,next) ->
+    dir = path.relative(dir_path, root)
+    file = path.join(dir,stat.name)
     files[file] = stat.mtime
     next()
   )

@@ -17,6 +17,19 @@ Common.fs.exists(global.config.filestore, (exists) ->
     process.exit(-1)
 )
 
+# compares remote and local list of (file, timestamp) pairs, fetches
+# the ones needing updates
+# note: client can only delete files when connected, otherwise it would
+# redownload from server. When a delete event is triggered a .filename.deleted
+# file is created to keep track that the file was deleted and is not yet to be
+# downloaded
+sync = (remote, local, socket) ->
+  console.log('Sync')
+  console.log(remote)
+  for file, mtime of remote
+    if local[file]==undefined or new Date(mtime) > new Date(local[file])
+      socket.emit('get', {file: file})
+
 # List for clients
 global.socketio = require('socket.io').listen(global.config.port, {'log':false})
 console.log("Listening...")
@@ -31,7 +44,7 @@ global.socketio.on('connection', (socket) ->
       socket.emit('authenticated', token)
       console.log(params.username + " logged in")
       socket.join(params.username)
-      global.socket = socket # TODO: delete
+      socket.emit('fetch_list')
       synchronizer.new_connection(socket, params.username)
     else 
       socket.emit('unauthorized')
@@ -52,6 +65,11 @@ global.socketio.on('connection', (socket) ->
   # receive updated list of files on client with their timestamps
   socket.on('list', (params) ->
     if (user = Common.auth.valid(params.token))
+      console.log('recieved list from ' + user)
+      path = Common.path.join(config.filestore, user)
+      Common.util.directory(path, (files) ->
+        sync(params.list, files, socket)
+      )
       # check which files need to be updated and emit 'get' on them
     else
       socket.emit('unauthorized')    
@@ -61,7 +79,7 @@ global.socketio.on('connection', (socket) ->
   socket.on('fetch_list', (params) ->
     if (user = Common.auth.valid(params.token))
       path = Common.path.join(config.filestore, user)
-      Common.util.directory(path, (files)
+      Common.util.directory(path, (files) ->
         socket.emit('list', {list:files})
       )
   )
