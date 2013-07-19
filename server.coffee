@@ -36,6 +36,35 @@ global.socketio.on('connection', (socket) ->
     else 
       socket.emit('unauthorized')
   )
+  
+  # request from client to get a specific file
+  socket.on('get', (params) ->
+    if (user = Common.auth.valid(params.token))
+      file_path = Common.path.join(global.config.filestore, user, params.file)
+      stream = Common.stream.createStream()
+      Common.stream(socket).emit('update', stream, {name: params.file, token: global.auth_token}) 
+      Common.fs.createReadStream(file_path).pipe(stream)
+      console.log("Uploading: " + file_path)
+    else
+      socket.emit('unauthorized')
+  )
+  
+  # receive updated list of files on client with their timestamps
+  socket.on('list', (params) ->
+    if (user = Common.auth.valid(params.token))
+      # check which files need to be updated and emit 'get' on them
+    else
+      socket.emit('unauthorized')    
+  )
+  
+  # send a list of files for user to client
+  socket.on('fetch_list', (params) ->
+    if (user = Common.auth.valid(params.token))
+      path = Common.path.join(config.filestore, user)
+      Common.util.directory(path, (files)
+        socket.emit('list', {list:files})
+      )
+  )
 
   # recieve file updates from client
   Common.stream(socket).on('update', (stream, params) ->
@@ -43,6 +72,7 @@ global.socketio.on('connection', (socket) ->
       filename = Common.path.join(global.config.filestore, user, Common.path.basename(params.name))
       Common.util.ensure_folder_exists(Common.path.join(global.config.filestore, user))
       stream.pipe(Common.fs.createWriteStream(filename))
+      console.log("Downloading: " + filename)
     else
       socket.emit('unauthorized')
   )

@@ -24,3 +24,20 @@ exports.save_config = (config) ->
     else
       console.log('Configuration saved successfully.')
   )
+
+# Callsback with a list of files in `path` with their last modified times
+exports.directory = (path, callback) =>
+  path = Common.util.expand(path)
+  files = {}
+  walker = Common.walk.walk(path,{followLinks: false})
+  
+  walker.on('file', (root,stat,next)->
+    dir = Common.path.relative(path, root)
+    file = Common.path.join(dir,stat.name)
+    files[file] = stat.mtime
+    next()
+  )
+  
+  walker.on('end', () =>
+    callback files
+  )

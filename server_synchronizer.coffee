@@ -4,12 +4,14 @@ Common = require './common'
 sockets = {}
 
 exports.create = (file, stat, basepath) ->
-  user = find_user(file)
-  update_file(file, stat.mtime, basepath, user)
+  #exports.update(file, stat, basepath)
 
 exports.update = (file, stat, basepath) ->
-  user = find_user(file)
-  update_file(file, stat.mtime, basepath, user)
+  #user = find_user(file)
+  #user_path = Common.path.join(basepath,user)
+  #complete_path = Common.path.join(basepath,file)
+  #relative_path = Common.path.relative(user_path, complete_path)
+  #update_file(file, stat.mtime, basepath, user)
 
 exports.remove = (file, stat, basepath) ->
   console.log("Delete" + file)
@@ -54,7 +56,7 @@ find_user = (file) ->
 update_file = (file, mtime, basepath, user) ->
   console.log "Sending " + file + " to " + user
   absfile = Common.path.join(basepath,file)
-  #sockets = global.socketio.sockets.in(user)['sockets']
+  sockets = global.socketio.sockets.in(user)['sockets']
   sockets = [global.socket]
   console.log(sockets)
   socks = for socket in sockets

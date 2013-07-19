@@ -4,10 +4,10 @@ Common = require './common'
 socket = null
 
 exports.create = (file, stat, basepath) ->
-  update_file(file, stat.mtime, basepath)
+  #update_file(file, stat.mtime, basepath)
 
 exports.update = (file, stat, basepath) ->
-  update_file(file, stat.mtime, basepath)
+  #update_file(file, stat.mtime, basepath)
 
 exports.remove = (file, stat, basepath) ->
   console.log("Delete" + file)
