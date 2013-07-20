@@ -1,9 +1,20 @@
 {
   "host": "localhost",
   "port": 31588,
+  "lport": 31589,
   "filestore": "./filestore",
+  "server": "server 0",
+  "current_server": 0,
   "servers": [
-    "server2",
-    "server3"
+    {
+      "server": "server 1",
+      "host": "localhost",
+      "port": 31589
+    },
+    {
+      "server": "server 2",
+      "host": "localhost",
+      "port": 31589
+    }
   ]
 }
