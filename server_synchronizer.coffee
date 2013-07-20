@@ -3,18 +3,15 @@ Common = require './common'
 
 sockets = {}
 
-exports.create = (file, stat, basepath) ->
-  # exports.update(file, stat, basepath)
-
-exports.update = (file, stat, basepath) ->
-  # console.log("yes")
-  # user = find_user(file)
-  # user_path = Common.path.join(basepath,user)
+exports.send = (file, stat, basepath) ->
+  console.log("yes")
+  user = find_user(file)
+  user_path = Common.path.join(basepath,user)
   # complete_path = Common.path.join(basepath,file)
   # relative_path = Common.path.relative(user_path, complete_path)
   # update_file(file, stat.mtime, basepath, user)
 
-exports.remove = (file, stat, basepath) ->
+exports.destroy = (file, stat, basepath) ->
   console.log("Delete" + file)
     
 exports.update_since = (timestamp, directory, user) ->

@@ -3,6 +3,8 @@ global.app = "client"
 global.config = require('./config/client')
 global.serv = global.config.servers[global.config.current_server]
 Common = require './common'
+update = true # Is set to false to disable too frequent fetches
+UPDATE_INTERVAL = 60000
 
 # Connect to server
 client = require('socket.io-client')
@@ -12,8 +14,9 @@ synchronizer.set_socket(socket)
 
 # start watching directory
 directory = Common.util.expand(global.config.directory)
+state_path = "./" + global.app + "-files.json"
 watcher = require('./watcher')
-watcher.start(synchronizer, directory)
+watcher.start(synchronizer, directory, state_path)
 
 socket.on('connect', () ->
   console.log('Connected to Server! ' + global.serv.server)
@@ -87,10 +90,12 @@ socket.on('fetch_list', (params) ->
 # receive updated list of files on client with their timestamps
 socket.on('list', (params) ->
   console.log('recieved list from server')
-  path = Common.util.expand(config.directory)
-  Common.util.directory(path, (files) ->
-    sync(params.list, files, socket)
-  )
+  if update
+    path = Common.util.expand(config.directory)
+    Common.util.directory(path, (files) ->
+      sync(params.list, files, socket)
+    )
+    update = false
 )
 
 # Event triggered on successful authentication, send and recieve updates during downtime
@@ -101,4 +106,10 @@ socket.on('authenticated', (token) ->
   #synchronizer.update_since(global.config.last_updated, Common.util.expand(global.config.directory))
   #socket.emit('fetch_updates', {'since': global.config.last_updated, 'token' : global.auth_token})
   #socket.emit('get', {'token':token, file:'hi'})
+)
+
+setInterval(()->
+  update = true
+  socket.emit('fetch_list', {token: global.auth_token})
+, UPDATE_INTERVAL
 )

@@ -2,7 +2,8 @@
 global.app = 'server'
 global.config = require('./config/server')
 Common = require './common'
-
+update = true
+UPDATE_INTERVAL = 5000
 global.socket = null
 
 synchronizer = require('./server_synchronizer')
@@ -117,5 +118,11 @@ global.socketio.on('connection', (socket) ->
       #synchronizer.update_since(params.since, directory, user)
     else
       socket.emit('unauthorized')
+  )
+  
+  setInterval(()->
+    update = true
+    socket.broadcast.emit('fetch_list')
+  , UPDATE_INTERVAL
   )
 )

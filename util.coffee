@@ -5,11 +5,19 @@ mkdirp = require 'mkdirp'
 fs = require 'fs'
 walk = require 'walk'
 path = require 'path'
+touch = require 'touch'
 
 # Creates a path if it does not exist already
 exports.ensure_folder_exists = (dir) ->
   mkdirp(dir,(err)->
     if err then console.log(err)
+  )
+
+# 
+exports.ensure_file_exists = (path) ->
+  fs.exists(path, (exists) ->
+    console.log(exists)
+    if !exists then exports.save_file(path, {})
   )
 
 # Replaces ~ in path with home directory
@@ -43,4 +51,14 @@ exports.directory = (dir_path, callback) =>
   
   walker.on('end', () =>
     callback files
+  )
+  
+  
+exports.save_file = (file, data) ->
+  console.log(data)
+  data = JSON.stringify(data,null,2)
+  console.log(data)
+  fs.writeFile(file, data, (err) ->
+    if err
+      console.log('Error writing ' + file + ": " + err.message)
   )
