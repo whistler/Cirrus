@@ -4,20 +4,21 @@ Common = require './common'
 sockets = {}
 
 exports.create = (file, stat, basepath) ->
-  #exports.update(file, stat, basepath)
+  # exports.update(file, stat, basepath)
 
 exports.update = (file, stat, basepath) ->
-  #user = find_user(file)
-  #user_path = Common.path.join(basepath,user)
-  #complete_path = Common.path.join(basepath,file)
-  #relative_path = Common.path.relative(user_path, complete_path)
-  #update_file(file, stat.mtime, basepath, user)
+  # console.log("yes")
+  # user = find_user(file)
+  # user_path = Common.path.join(basepath,user)
+  # complete_path = Common.path.join(basepath,file)
+  # relative_path = Common.path.relative(user_path, complete_path)
+  # update_file(file, stat.mtime, basepath, user)
 
 exports.remove = (file, stat, basepath) ->
   console.log("Delete" + file)
     
 exports.update_since = (timestamp, directory, user) ->
-  files_updated_since(timestamp, directory, user)
+  # files_updated_since(timestamp, directory, user)
   
 exports.new_connection = (socket, user) ->
   sockets[socket.id] = user
@@ -61,7 +62,7 @@ update_file = (file, mtime, basepath, user) ->
   console.log(sockets)
   socks = for socket in sockets
     stream = Common.stream.createStream()
-    Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token}) 
+    Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token, mtime: mtime}) 
     Common.fs.createReadStream(absfile).pipe(stream)
     console.log "Sending " + file + " to " + user + " on socket " + socket.id
   

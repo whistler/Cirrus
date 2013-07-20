@@ -4,10 +4,10 @@ Common = require './common'
 socket = null
 
 exports.create = (file, stat, basepath) ->
-  #update_file(file, stat.mtime, basepath)
+  update_file(file, stat.mtime, basepath)
 
 exports.update = (file, stat, basepath) ->
-  #update_file(file, stat.mtime, basepath)
+  update_file(file, stat.mtime, basepath)
 
 exports.remove = (file, stat, basepath) ->
   console.log("Delete" + file)
@@ -26,7 +26,7 @@ update_file = (file, mtime, basepath) ->
   console.log("Uploading: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
-  Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token}) 
+  Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token, mtime: mtime}) 
   Common.fs.createReadStream(absfile).pipe(stream)
   
   global.config.last_updated = mtime # timestamps being stored in GMT

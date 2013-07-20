@@ -2,16 +2,14 @@ Common = require './common'
 
 watcher = require('watch')
 debug = false
+files = {}
+dir = ""
 # Watches file in 'directory' and notifies 'synchronizer' of
-# any changes to files
-Watcher = (synchronizer, directory) ->
-  
-  # returns path of file relative to 'directory'
-  relative_path = (file) ->
-    return Common.path.relative(directory, file)
-    
+# any changes to files  
+exports.start = (synchronizer, directory) ->
   try
     directory = Common.path.normalize(directory)
+    dir = directory
     watcher.createMonitor(directory, (monitor) ->
 
       monitor.on("created", (file, stat) ->
@@ -19,8 +17,9 @@ Watcher = (synchronizer, directory) ->
         synchronizer.create(relative_path(file), stat, directory)
       )
       monitor.on("changed", (file, curr, prev) ->
-        console.log(file + " changed " + curr) if debug
-        synchronizer.update(relative_path(file), curr, directory)
+        if !files[file] || curr.mtime > files[file]
+          console.log(file + " changed " + curr.mtime) if debug
+          synchronizer.update(relative_path(file), curr, directory)
       )
       monitor.on("removed", (file, stat) ->
         console.log(file + " removed") if debug
@@ -32,5 +31,11 @@ Watcher = (synchronizer, directory) ->
       ". Make sure it exists.")
 
   console.log("Watching " + directory + "...")
-
-module.exports = Watcher
+  
+  
+exports.updated = (file, timestamp) ->
+  files[file] = timestamp
+  
+# returns path of file relative to 'directory'
+relative_path = (file) ->
+  return Common.path.relative(dir, file)

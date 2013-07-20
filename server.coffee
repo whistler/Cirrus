@@ -6,7 +6,8 @@ Common = require './common'
 global.socket = null
 
 synchronizer = require('./server_synchronizer')
-watcher = require('./watcher')(synchronizer, global.config.filestore)
+watcher = require('./watcher')
+watcher.start(synchronizer, global.config.filestore)
 
 # check if filestore is a valid location
 Common.fs.exists(global.config.filestore, (exists) ->
@@ -27,7 +28,7 @@ sync = (remote, local, socket) ->
   console.log('Sync')
   console.log(remote)
   for file, mtime of remote
-    if local[file]==undefined or new Date(mtime) > new Date(local[file])
+    if local[file]==undefined || new Date(mtime) > new Date(local[file])
       socket.emit('get', {file: file})
 
 # List for clients
@@ -42,6 +43,7 @@ global.socketio.on('connection', (socket) ->
     token = Common.auth.authenticate(params.username, params.password)
     if token # successfully logged in
       socket.emit('authenticated', token)
+      global.socket = socket # TODO: delete this
       console.log(params.username + " logged in")
       socket.join(params.username)
       socket.emit('fetch_list')
@@ -55,7 +57,8 @@ global.socketio.on('connection', (socket) ->
     if (user = Common.auth.valid(params.token))
       file_path = Common.path.join(global.config.filestore, user, params.file)
       stream = Common.stream.createStream()
-      Common.stream(socket).emit('update', stream, {name: params.file, token: global.auth_token}) 
+      stat = Common.fs.statSync(file_path)
+      Common.stream(socket).emit('update', stream, {name: params.file, token: global.auth_token, mtime: stat.mtime}) 
       Common.fs.createReadStream(file_path).pipe(stream)
       console.log("Uploading: " + file_path)
     else
@@ -89,6 +92,13 @@ global.socketio.on('connection', (socket) ->
     if (user = Common.auth.valid(params.token))
       filename = Common.path.join(global.config.filestore, user, Common.path.basename(params.name))
       Common.util.ensure_folder_exists(Common.path.join(global.config.filestore, user))
+      stream.on('end', () ->
+        Common.fs.open(filename, 'a', (err, fd) ->
+          watcher.updated(filename, params.mtime)
+          mtime = new Date(params.mtime)
+          Common.fs.futimesSync(fd, mtime, mtime)
+        )
+      )
       stream.pipe(Common.fs.createWriteStream(filename))
       console.log("Downloading: " + filename)
     else
@@ -104,7 +114,7 @@ global.socketio.on('connection', (socket) ->
   socket.on('fetch_updates', (params) ->
     if user = Common.auth.valid(params.token)
       directory = Common.path.join(global.config.filestore, user)
-      synchronizer.update_since(params.since, directory, user)
+      #synchronizer.update_since(params.since, directory, user)
     else
       socket.emit('unauthorized')
   )
