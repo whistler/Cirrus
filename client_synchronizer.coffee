@@ -8,15 +8,13 @@ watcher = null
 #   file: relative path of file
 #   basepath: path where file is stored
 #   time: time the file was modified
-exports.send = (file, basepath, time, last_updated, callback) ->
+exports.send = (file, basepath, time, last_updated) ->
   console.log("Uploading: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
   Common.fs.createReadStream(absfile).pipe(stream)
-  stream.on('close', ()->
-    callback
-  )
+
   
 exports.destroy = (file) ->
   socket.emit('delete', {file: file, token: global.auth_token})

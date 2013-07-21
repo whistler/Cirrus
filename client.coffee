@@ -74,6 +74,11 @@ socket.on('list', (params) ->
   synchronizer.sync(params.list, watcher, socket)
 )
 
+socket.on('delete', (params) ->
+  path = Common.path.join(global.config.directory, params.file)
+  Common.fs.fs.unlinkSync(path)
+)
+
 socket.on('message', (params)->
   console.log (params)
 )

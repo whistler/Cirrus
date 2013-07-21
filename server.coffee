@@ -1,12 +1,16 @@
 # Cirrus Server
 global.app = 'server'
 global.config = require('./config/server')
-Common = require './common'
+Common = require('./common')
 client = require('socket.io-client')
-####################### SERVER - SERVER COMMUNICATION ###################
+
+####################### SERVER - SERVER(P2P) COMMUNICATION ###################
 
 csockets = []
-ssynchronizer = require('./p2p_synchronizer') # sends updates to other server
+p2psynchronizer = require('./p2p_synchronizer') # sends updates to other server
+P2PWatcher = require('./p2p_watcher')
+p2pwatcher = new P2PWatcher(p2psynchronizer, global.config.filestore)
+p2psynchronizer.set_watcher(p2pwatcher)
 
 # Connection to other servers
 for server in global.config.servers
@@ -16,49 +20,58 @@ for server in global.config.servers
   csocket.on('connect', () ->
     console.log('Connected to ' + server.server)
     csocket.emit('fetch_list')
+    
+    # recieve file updates from client
+    Common.stream(csocket).on('update', (stream, params) ->
+      console.log(params)
+      p2psynchronizer.get(stream, params, csocket)
+    )
   )
   
-  csocket.on('list',()->
-  
+  csocket.on('delete', (params) ->
+    path = Common.path.join(global.config.filestore, params.file)
+    Common.fs.fs.unlinkSync(path)
   )
   
-  csocket.on('update',()->
-  
+  csocket.on('list',(params)->
+    p2psynchronizer.sync(params.list, p2pwatcher, csocket)
   )
   
   csockets.push(csocket)
 
 # Socket for other servers to connect to
-ssocketio = require('socket.io').listen(global.config.port, {'log':false})
+# TODO: change to port
+global.ssocketio = require('socket.io').listen(global.config.lport, {'log': false})
 console.log(global.config.server + " is Listening...")
 
-ssocketio.on('connection', (csocket) ->
+global.ssocketio.on('connection', (ssocket) ->
+  ssocket.join('server');
   
   # request from client to get a specific file
-  csocket.on('get', (params) ->
+  ssocket.on('get', (params) ->
     file_path = Common.path.join(global.config.filestore, params.file)
     stream = Common.stream.createStream()
     stat = Common.fs.statSync(file_path)
-    Common.stream(csocket).emit('update', stream, {name: params.file, mtime: stat.mtime}) 
+    Common.stream(csocket).emit('update', stream, {file: params.file, mtime: stat.mtime}) 
     Common.fs.createReadStream(file_path).pipe(stream)
     console.log("Uploading: " + file_path)
   )
     
   # send a list of files for user to client
-  csocket.on('fetch_list', (params) ->
+  ssocket.on('fetch_list', (params) ->
     path = Common.path.join(config.filestore)
     Common.util.directory(path, (files) ->
-      csocket.emit('list', {list:files})
+      ssocket.emit('list', {list:files})
     )
   )
 
   # client gets disconnected
-  csocket.on('disconnect', () ->
-    console.log('disconnected')
+  ssocket.on('disconnect', () ->
+    console.log('server node disconnected')
   )
 
   # client gets disconnected
-  csocket.on('error', () ->
+  ssocket.on('error', () ->
     console.log('error')
   )
 )
@@ -129,6 +142,14 @@ socketio.on('connection', (socket) ->
   Common.stream(socket).on('update', (stream, params) ->
     if (user = Common.auth.valid(params.token))
       synchronizer.get(stream, params, user, socket, watcher)
+    else
+      socket.emit('unauthorized')
+  )
+  
+  socket.on('delete', (params) ->
+    if (user = Common.auth.valid(params.token))
+      path = Common.path.join(global.config.filestore, user, params.file)
+      Common.fs.fs.unlinkSync(path)
     else
       socket.emit('unauthorized')
   )

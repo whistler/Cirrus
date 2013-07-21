@@ -8,22 +8,20 @@ watcher = null
 #   file: relative path of file
 #   basepath: path where file is stored
 #   time: time the file was modified
-exports.send = (file, basepath, time, last_updated, callback) ->
+exports.send = (file, basepath, time, last_updated) ->
   console.log("Uploading: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
-  Common.stream(socket).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
+  sockets = global.ssocketio.sockets.in('server')
+  Common.stream(sockets).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
   Common.fs.createReadStream(absfile).pipe(stream)
-  stream.on('close', ()->
-    callback
-  )
   
 exports.destroy = (file) ->
   socket.emit('delete', {file: file, token: global.auth_token})
   console.log("Delete " + file)
   
 exports.get = (stream, params, socket) ->
-  filename = Common.path.join(Common.util.expand(global.config.directory), params.file)
+  filename = Common.path.join(global.config.filestore, params.file)
   path = Common.path.dirname(filename)
   Common.util.ensure_folder_exists(path)
   my_time = new Date(watcher.get_timestamp(filename))
