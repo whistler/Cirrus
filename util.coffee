@@ -52,7 +52,7 @@ exports.directory = (dir_path, callback) =>
   )
 
 # saves file to disk with data
-exports.save_file = (file, data, callback) ->
+exports.save_file = (file, data) ->
   data = JSON.stringify(data,null,2)
   fs.writeFileSync(file, data)
 
