@@ -43,14 +43,15 @@ socket.on('get', (params) ->
   file_path = Common.path.join(Common.util.expand(global.config.directory), params.file)
   stream = Common.stream.createStream()
   stat = Common.fs.statSync(file_path)
-  Common.stream(socket).emit('update', stream, {name: params.file, token: global.auth_token, mtime: stat.mtime}) 
+  Common.stream(socket).emit('update', stream, {file: params.file, token: global.auth_token, time: stat.mtime}) 
   Common.fs.createReadStream(file_path).pipe(stream)
   console.log("Uploading: " + file_path)
 )
 
 # server reports file recieved successfully
 socket.on('update_success', (params)->
-  watcher.update(params.file, params.mtime)
+  console.log(params)
+  watcher.set_timestamp(params.file, params.time)
 )
 
 # Event triggered if username/password or token provided was invalid

@@ -15,10 +15,8 @@ exports.ensure_folder_exists = (dir) ->
 
 # Creates file with empty json object if it doesnt exist
 exports.ensure_file_exists = (path) ->
-  fs.exists(path, (exists) ->
-    console.log(exists)
-    if !exists then exports.save_file(path, {})
-  )
+  if !fs.existsSync(path)
+    exports.save_file(path, {})
 
 # Replaces ~ in path with home directory
 exports.expand = (directory) ->
@@ -54,12 +52,9 @@ exports.directory = (dir_path, callback) =>
   )
 
 # saves file to disk with data
-exports.save_file = (file, data) ->
+exports.save_file = (file, data, callback) ->
   data = JSON.stringify(data,null,2)
-  fs.writeFile(file, data, (err) ->
-    if err
-      console.log('Error writing ' + file + ": " + err.message)
-  )
+  fs.writeFileSync(file, data)
 
 # if file does not exists displays message and exits
 exports.exit_if_missing = (file, message) ->

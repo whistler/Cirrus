@@ -5,30 +5,26 @@ Common = require './common'
 global.socket = null
 
 synchronizer = require('./server_synchronizer')
-watcher = require('./watcher')
-state_path = "./" + global.app + "-files.json"
-watcher.start(synchronizer, global.config.filestore, state_path)
+Watcher = require('./server_watcher')
 
 Common.util.exit_if_missing(global.config.filestore, "Configuration file missing.")
 console.log('Storing files in ' + global.config.filestore)
 
 # List for clients
-global.socketio = require('socket.io').listen(global.config.port, {'log':false})
+socketio = require('socket.io').listen(global.config.port, {'log':false})
 console.log("Listening...")
 
-global.socketio.on('connection', (socket) ->
+socketio.on('connection', (socket) ->
   console.log("Connected: " + socket.id)
-  synchronizer.set_socket(socket)
+  watcher = null
   # authenticate user
   socket.on('auth', (params) ->
     token = Common.auth.authenticate(params.username, params.password)
     if token # successfully logged in
       socket.emit('authenticated', token)
-      global.socket = socket # TODO: delete this
       console.log(params.username + " logged in")
-      socket.join(params.username)
+      watcher = new Watcher(synchronizer, global.config.filestore, socket, params.username)
       socket.emit('fetch_list')
-      synchronizer.new_connection(socket, params.username)
     else 
       socket.emit('unauthorized')
   )
@@ -39,7 +35,7 @@ global.socketio.on('connection', (socket) ->
       file_path = Common.path.join(global.config.filestore, user, params.file)
       stream = Common.stream.createStream()
       stat = Common.fs.statSync(file_path)
-      Common.stream(socket).emit('update', stream, {name: params.file, token: global.auth_token, curr_mtime: stat.mtime, prev_mtime: stat.mtime}) 
+      Common.stream(socket).emit('update', stream, {file: params.file, token: global.auth_token, time: stat.mtime, last_updated: stat.mtime}) 
       Common.fs.createReadStream(file_path).pipe(stream)
       console.log("Uploading: " + file_path)
     else
@@ -71,7 +67,7 @@ global.socketio.on('connection', (socket) ->
   # recieve file updates from client
   Common.stream(socket).on('update', (stream, params) ->
     if (user = Common.auth.valid(params.token))
-      synchronizer.get(stream, params, user, socket)
+      synchronizer.get(stream, params, user, socket, watcher)
     else
       socket.emit('unauthorized')
   )
@@ -79,14 +75,14 @@ global.socketio.on('connection', (socket) ->
   # client reports file recieved successfully
   socket.on('update_success', (params) ->
     if (user = Common.auth.valid(params.token))
-      watcher.update(params.file, params.mtime)
+      watcher.set_timestamp(params.file, params.time)
     else
       socket.emit('unauthorized')
   )
 
   # client gets disconnected
   socket.on('disconnect', () ->
-    synchronizer.disconnected(socket)
+    
   )
  
 )

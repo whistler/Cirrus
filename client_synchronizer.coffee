@@ -7,12 +7,12 @@ watcher = null
 # Send a file update to socket
 #   file: relative path of file
 #   basepath: path where file is stored
-#   mtime: time the file was modified
-exports.send = (file, basepath, curr_mtime, prev_mtime, callback) ->
+#   time: time the file was modified
+exports.send = (file, basepath, time, last_updated, callback) ->
   console.log("Uploading: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
-  Common.stream(socket).emit('update', stream, {file: file, token: global.auth_token, curr_mtime: curr_mtime, prev_time: prev_mtime}) 
+  Common.stream(socket).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
   Common.fs.createReadStream(absfile).pipe(stream)
   stream.on('close', ()->
     callback
@@ -26,29 +26,33 @@ exports.get = (stream, params, socket) ->
   filename = Common.path.join(Common.util.expand(global.config.directory), params.file)
   path = Common.path.dirname(filename)
   Common.util.ensure_folder_exists(path)
-  my_mtime = watcher.get_time(filename)
-  
-  if my_mtime==params.prev_mtime
-    stream.on('close', () ->
+  my_time = new Date(watcher.get_timestamp(filename))
+  recv_prev_time = new Date(params.last_updated)
+  recv_time = new Date(params.time)
+  if my_time > recv_prev_time
+    console.log('unhandled conflict')
+  else if my_time == recv_time
+    # already up to date
+  else
+    stream.on('end', () ->
       Common.fs.open(filename, 'a', (err, fd) ->
-        watcher.updated(filename, params.curr_mtime)
-        mtime = new Date(params.curr_mtime)
-        Common.fs.futimesSync(fd, mtime, mtime)
+        watcher.set_timestamp(params.file, params.last_updated)
+        time = new Date(params.last_updated)
+        Common.fs.futimesSync(fd, time, time)
       )
-      socket.emit('update_success', {auth: global.auth_token, file: file, mtime: params.curr_mtime})
+      socket.emit('update_success', {token: global.auth_token, file: params.file, time: params.last_updated})
     )
     stream.pipe(Common.fs.createWriteStream(filename))
-    console.log('Downloading ' + params.name)
-  else if my_mtime > params.prev_mtime
-    console.log('unhandled conflict')
+    console.log('Downloading ' + params.file)
+
     # conflict
 
 exports.sync = (files, socket) ->
   console.log('Sync')
   console.log(files)
-  for file, mtime of files
-    client_mtime = watcher.get_time(file)
-    if client_mtime==undefined || new Date(mtime) > new Date(client_mtime)
+  for file, time of files
+    client_time = watcher.get_timestamp(file)
+    if client_time==undefined || new Date(time) > new Date(client_time)
       socket.emit('get', {file: file, token: global.auth_token})
       
 exports.set_socket = (sock) ->
