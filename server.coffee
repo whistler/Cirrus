@@ -46,10 +46,7 @@ socketio.on('connection', (socket) ->
   socket.on('list', (params) ->
     if (user = Common.auth.valid(params.token))
       console.log('recieved list from ' + user)
-      path = Common.path.join(config.filestore, user)
-      Common.util.directory(path, (files) ->
-        synchronizer.sync(params.list, files, socket)
-      )
+      synchronizer.sync(params.list, watcher, socket, user)
       # check which files need to be updated and emit 'get' on them
     else
       socket.emit('unauthorized')    

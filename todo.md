@@ -8,9 +8,9 @@ TODO LIST
 [✓] Files updated on server should be updated on client when it connects
 [✓] Client should store the time of the last updated time
 [✓] Client should try connecting to a different server on disconnect
-[ ] Updated files on server should be sent to the client async
+[✓] Updated files on server should be sent to the client async
 [ ] File updated by one client should be sent to all other clients
 [ ] Server should be able to sync with other servers
-[ ] File conflicts should create two versions
+[✓] File conflicts should create two versions
 [ ] Send delete signals
 

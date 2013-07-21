@@ -47,13 +47,28 @@ exports.get = (stream, params, socket) ->
 
     # conflict
 
-exports.sync = (files, socket) ->
+exports.sync = (remote, watcher, socket) ->
   console.log('Sync')
-  console.log(files)
-  for file, time of files
-    client_time = watcher.get_timestamp(file)
-    if client_time==undefined || new Date(time) > new Date(client_time)
+  console.log(remote)
+  for file, time of remote
+    filename = Common.path.join(Common.util.expand(global.config.directory), file)
+    last_updated = new Date(watcher.get_timestamp(file))
+    server_time = new Date(time)
+    try
+      stats = Common.fs.statSync(filename)
+    catch
+      stats = {}
+    disk_time = stats.mtime
+    if watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
       socket.emit('get', {file: file, token: global.auth_token})
+    else if server_time > last_updated && disk_time > last_updated
+      new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))
+      console.log("Conflict: File " + file + "has also been changed on server. Renamed to " + new_file)
+      Common.fs.renameSync(filename, new_file)
+      stat = Common.fs.statSync(new_file)
+      watcher.set_timestamp(file, stat.mtime)
+      socket.emit('get', {file: file, token: global.auth_token})
+
       
 exports.set_socket = (sock) ->
   socket = sock

@@ -72,7 +72,11 @@ socket.on('fetch_list', (params) ->
 # receive updated list of files on client with their timestamps
 socket.on('list', (params) ->
   console.log('recieved list from server')
-  synchronizer.sync(params.list, socket)
+  synchronizer.sync(params.list, watcher, socket)
+)
+
+socket.on('message', (params)->
+  console.log (params)
 )
 
 # Event triggered on successful authentication, send and recieve updates during downtime

@@ -20,12 +20,25 @@ exports.destroy = (file, basepath, socket) ->
 # compares remote and local list of (file, timestamp) pairs, fetches
 # the ones needing updates
 # note: client can only delete files when connected
-exports.sync = (remote, local, socket) ->
+exports.sync = (remote, watcher, socket, user) ->
   console.log('Sync')
   console.log(remote)
   for file, time of remote
-    if local[file]==undefined || new Date(time) > new Date(local[file])
+    filename = Common.path.join(Common.path.normalize(global.config.filestore), user, file)
+    last_updated = new Date(watcher.get_timestamp(file))
+    server_time = new Date(time)
+    stats = Common.fs.statSync(filename)
+    disk_time = stats.mtime
+    if watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
       socket.emit('get', {file: file})
+    else if server_time > last_updated && disk_time > last_updated
+      new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))
+      socket.emit('message',"Conflict: File " + file + " has also been changed on server. Renamed to " + new_file + "on server")
+      Common.fs.renameSync(filename, new_file)
+      stat = Common.fs.statSync(new_file)
+      watcher.set_timestamp(file, stat.mtime)
+      socket.emit('get', {file: file})
+      
       
 exports.get = (stream, params, user, socket, watcher) ->
   filename = Common.path.join(global.config.filestore, user, Common.path.basename(params.file))

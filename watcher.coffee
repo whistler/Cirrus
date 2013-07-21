@@ -16,11 +16,12 @@ exports.start = (synchronizer, directory, file_list_path) ->
   watcher.createMonitor(directory, (monitor) ->
 
     monitor.on("created", (file, stat) ->
-      synchronizer.send(relative_path(file), directory, stat.mtime, 0)
+      synchronizer.send(relative_path(file), directory, stat.mtime, stat.mtim)
     )
     monitor.on("changed", (file, curr, prev) ->
-      if !files[file] || curr.mtime > new Date(files[file])
-        synchronizer.send(relative_path(file), directory, curr.mtime, prev.mtime)
+      rfile = relative_path(file)
+      if !files[rfile] || curr.mtime > new Date(files[rfile])
+        synchronizer.send(rfile, directory, curr.mtime, prev.mtime)
     )
     monitor.on("removed", (file, stat) ->
       console.log(file + " removed") if debug

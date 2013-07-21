@@ -23,14 +23,15 @@ class Watcher
     
     watcher.createMonitor(@user_directory, (monitor) =>
       monitor.on("created", (file, stat) =>
-        synchronizer.send(@relative_path(file), @user_directory, stat.mtime, 0, @socket)
+        synchronizer.send(@relative_path(file), @user_directory, stat.mtime, stat.mtime, @socket, @user)
       )
       monitor.on("changed", (file, curr, prev) =>
-        if !@file_list[@relative_path(file)] || curr.mtime > new Date(@file_list[file])
-          synchronizer.send(@relative_path(file), @user_directory, curr.mtime, prev.mtime, @socket)
+        rfile = @relative_path(file)
+        if !@file_list[rfile] || curr.mtime > new Date(@file_list[rfile])
+          synchronizer.send(rfile, @user_directory, curr.mtime, prev.mtime, @socket, @user)
       )
-      monitor.on("removed", (file, stat) ->
-        synchronizer.destroy(@relative_path(file), @socket)
+      monitor.on("removed", (file, stat) =>
+        synchronizer.destroy(@relative_path(file), @user_directory, @socket)
         set_timestamp(@relative_path(file), "deleted")
       )
     )
