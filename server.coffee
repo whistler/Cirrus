@@ -15,7 +15,7 @@ p2psynchronizer.set_watcher(p2pwatcher)
 # Connection to other servers
 for server in global.config.servers
   console.log("Connecting to " + server.server)
-  csocket = client.connect("http://" +  server.host + ":" + server.port, {'transports':['websocket']})
+  csocket = client.connect("http://" +  server.host + ":" + server.lport, {'transports':['websocket']})
 
   csocket.on('connect', () ->
     console.log('Connected to ' + server.server)
