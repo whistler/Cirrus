@@ -2,26 +2,58 @@
 Common = require './common'
 
 sockets = {}
-
-exports.send = (file, stat, basepath) ->
-  console.log("yes")
+socket = null
+# Send a file update to socket
+#   file: relative path of file
+#   basepath: path where file is stored
+#   mtime: time the file was modified
+exports.send = (file, basepath, curr_mtime, prev_mtime, callback) ->
   user = find_user(file)
   user_path = Common.path.join(basepath,user)
-  # complete_path = Common.path.join(basepath,file)
-  # relative_path = Common.path.relative(user_path, complete_path)
-  # update_file(file, stat.mtime, basepath, user)
+  complete_path = Common.path.join(basepath,file)
+  relative_path = Common.path.relative(user_path, complete_path)
+  absfile = Common.path.join(basepath,file)
+  stream = Common.stream.createStream()
+  Common.stream(global.socketio.sockets.in(user)).emit('update', stream, {name: relative_path, token: global.auth_token, curr_mtime: curr_mtime, prev_mtime: prev_mtime}) 
+  Common.fs.createReadStream(absfile).pipe(stream)
+  console.log "Sending " + file + " to " + user + " on socket " + socket.id
+
 
 exports.destroy = (file, stat, basepath) ->
   console.log("Delete" + file)
-    
-exports.update_since = (timestamp, directory, user) ->
-  # files_updated_since(timestamp, directory, user)
   
 exports.new_connection = (socket, user) ->
   sockets[socket.id] = user
     
 exports.disconnected = (socket) ->
   delete sockets[socket.id]
+  
+exports.set_socket = (sock) ->
+  socket = sock
+
+# compares remote and local list of (file, timestamp) pairs, fetches
+# the ones needing updates
+# note: client can only delete files when connected
+exports.sync = (remote, local, socket) ->
+  console.log('Sync')
+  console.log(remote)
+  for file, mtime of remote
+    if local[file]==undefined || new Date(mtime) > new Date(local[file])
+      socket.emit('get', {file: file})
+      
+exports.get = (stream, params, user, socket) ->
+  filename = Common.path.join(global.config.filestore, user, Common.path.basename(params.file))
+  Common.util.ensure_folder_exists(Common.path.join(global.config.filestore, user))
+  stream.on('end', () ->
+    Common.fs.open(filename, 'a', (err, fd) ->
+      mtime = new Date(params.mtime)
+      Common.fs.futimesSync(fd, mtime, mtime)
+      socket.emit('update_success', {file: params.file, mtime: mtime})
+    )
+  )
+  stream.pipe(Common.fs.createWriteStream(filename))
+  console.log("Downloading: " + filename)
+
 
 # finds the sockets to which to send the updates to depending on 
 # whether its the client or server. On server the right user is 
@@ -46,32 +78,3 @@ find_user = (file) ->
   regex = /^(.*)\//
   matches = regex.exec(file)
   matches[1]
-
-# Send a file update to socket
-#   file: relative path of file
-#   basepath: path where file is stored
-#   mtime: time the file was modified
-update_file = (file, mtime, basepath, user) ->
-  console.log "Sending " + file + " to " + user
-  absfile = Common.path.join(basepath,file)
-  sockets = global.socketio.sockets.in(user)['sockets']
-  sockets = [global.socket]
-  console.log(sockets)
-  socks = for socket in sockets
-    stream = Common.stream.createStream()
-    Common.stream(socket).emit('update', stream, {name: file, token: global.auth_token, mtime: mtime}) 
-    Common.fs.createReadStream(absfile).pipe(stream)
-    console.log "Sending " + file + " to " + user + " on socket " + socket.id
-  
-# Finds files in 'directory' updated after 'timestamp' and
-# sends them to 'socket'
-files_updated_since = (timestamp, directory, user) ->
-  console.log directory
-  walker = Common.walk.walk(directory,{followLinks: false})
-  timestamp = new Date(timestamp)
-  # for every update in file the timestamp to be stored in config should be modified time of director not files
-  walker.on('file', (root,stat,next)->
-    if stat.mtime > timestamp
-      update_file(stat.name, stat.mtime, directory, user) 
-    next()
-  )

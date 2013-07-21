@@ -13,7 +13,7 @@ exports.ensure_folder_exists = (dir) ->
     if err then console.log(err)
   )
 
-# 
+# Creates file with empty json object if it doesnt exist
 exports.ensure_file_exists = (path) ->
   fs.exists(path, (exists) ->
     console.log(exists)
@@ -52,13 +52,20 @@ exports.directory = (dir_path, callback) =>
   walker.on('end', () =>
     callback files
   )
-  
-  
+
+# saves file to disk with data
 exports.save_file = (file, data) ->
-  console.log(data)
   data = JSON.stringify(data,null,2)
-  console.log(data)
   fs.writeFile(file, data, (err) ->
     if err
       console.log('Error writing ' + file + ": " + err.message)
+  )
+
+# if file does not exists displays message and exits
+exports.exit_if_missing = (file, message) ->
+  # check if filestore is a valid location
+  fs.exists(global.config.filestore, (exists) ->
+    if !exists
+      console.log('Error: ' + message)
+      process.exit(-1)
   )

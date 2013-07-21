@@ -3,8 +3,6 @@ global.app = "client"
 global.config = require('./config/client')
 global.serv = global.config.servers[global.config.current_server]
 Common = require './common'
-update = true # Is set to false to disable too frequent fetches
-UPDATE_INTERVAL = 60000
 
 # Connect to server
 client = require('socket.io-client')
@@ -17,6 +15,7 @@ directory = Common.util.expand(global.config.directory)
 state_path = "./" + global.app + "-files.json"
 watcher = require('./watcher')
 watcher.start(synchronizer, directory, state_path)
+synchronizer.set_watcher(watcher)
 
 socket.on('connect', () ->
   console.log('Connected to Server! ' + global.serv.server)
@@ -24,32 +23,9 @@ socket.on('connect', () ->
   
   # recieve file updates from client
   Common.stream(socket).on('update', (stream, params) ->
-    filename = Common.path.join(Common.util.expand(global.config.directory), params.name)
-    path = Common.path.dirname(filename)
-    Common.util.ensure_folder_exists(path)
-    stream.on('close', () ->
-      Common.fs.open(filename, 'a', (err, fd) ->
-        watcher.updated(filename, params.mtime)
-        mtime = new Date(params.mtime)
-        Common.fs.futimesSync(fd, mtime, mtime)
-      )
-    )
-    stream.pipe(Common.fs.createWriteStream(filename))
-    console.log('Downloading ' + params.name)
+    synchronizer.get(stream, params, socket)
   )
 )
-
-sync = (remote, local, socket) ->
-  console.log('Sync')
-  console.log(remote)
-  for file, mtime of remote
-    if local[file]==undefined || new Date(mtime) > new Date(local[file])
-      socket.emit('get', {file: file, token: global.auth_token})
-
-next_server = () ->
-  if ++global.config.current_server==global.config.servers.length
-    global.config.current_server = 0
-  Common.util.save_config(global.config)
 
 socket.on('disconnect', () ->
   console.log('Server Disconnected')
@@ -72,6 +48,11 @@ socket.on('get', (params) ->
   console.log("Uploading: " + file_path)
 )
 
+# server reports file recieved successfully
+socket.on('update_success', (params)->
+  watcher.update(params.file, params.mtime)
+)
+
 # Event triggered if username/password or token provided was invalid
 socket.on('unauthorized', () ->
   console.log("Unable to log in")
@@ -90,12 +71,7 @@ socket.on('fetch_list', (params) ->
 # receive updated list of files on client with their timestamps
 socket.on('list', (params) ->
   console.log('recieved list from server')
-  if update
-    path = Common.util.expand(config.directory)
-    Common.util.directory(path, (files) ->
-      sync(params.list, files, socket)
-    )
-    update = false
+  synchronizer.sync(params.list, socket)
 )
 
 # Event triggered on successful authentication, send and recieve updates during downtime
@@ -103,13 +79,9 @@ socket.on('authenticated', (token) ->
   global.auth_token = token
   socket.emit('fetch_list', {token: token})
   console.log("Successfully logged in!")
-  #synchronizer.update_since(global.config.last_updated, Common.util.expand(global.config.directory))
-  #socket.emit('fetch_updates', {'since': global.config.last_updated, 'token' : global.auth_token})
-  #socket.emit('get', {'token':token, file:'hi'})
 )
 
-setInterval(()->
-  update = true
-  socket.emit('fetch_list', {token: global.auth_token})
-, UPDATE_INTERVAL
-)
+# Connect to next server when the program starts again
+next_server = () ->
+  global.config.current_server = global.config.current_server % global.config.servers.length
+  Common.util.save_config(global.config)
