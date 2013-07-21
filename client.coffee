@@ -33,9 +33,8 @@ socket.on('disconnect', () ->
 )
 
 socket.on('error', (err) ->
-  console.log(err)
-  console.log("TODO: Try to reconnect after timeout")
   next_server()
+  console.log(err)
 )
 
 # Send file that server requests
@@ -86,7 +85,10 @@ socket.on('authenticated', (token) ->
   console.log("Successfully logged in!")
 )
 
-# Connect to next server when the program starts again
-next_server = () ->
-  global.config.current_server = global.config.current_server % global.config.servers.length
+# Connect to next server
+next_server = (socket) ->
+  global.config.current_server = (global.config.current_server + 1) % global.config.servers.length
+  global.serv = global.config.servers[global.config.current_server]
+  socket = client.connect("http://" + global.serv.host + ":" + global.serv.port, {'transports':['websocket']})
+  console.log('connecting to server: ' + global.config.current_server)
   Common.util.save_config(global.config)

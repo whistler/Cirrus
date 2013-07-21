@@ -50,7 +50,7 @@ exports.get = (stream, params, socket) ->
 exports.sync = (remote, watcher, socket) ->
   console.log('Sync')
   for file, time of remote
-    filename = Common.path.join(Common.util.expand(global.config.directory), file)
+    filename = Common.path.join(Common.util.expand(global.config.filestore), file)
     last_updated = new Date(watcher.get_timestamp(file))
     server_time = new Date(time)
     try

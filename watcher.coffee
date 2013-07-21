@@ -35,7 +35,7 @@ exports.start = (synchronizer, directory, file_list_path) ->
   exports.set_timestamp = (file, timestamp) ->
     files[file] = timestamp
     Common.util.save_file(file_list_path, files)
-    console.log file + ": " + timestamp
+    console.log "Updated " + file + ": " + timestamp
   
   exports.get_timestamp = (file) ->
     files[file]
