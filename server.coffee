@@ -40,7 +40,6 @@ for server in global.config.servers
   csockets.push(csocket)
 
 # Socket for other servers to connect to
-# TODO: change to port
 global.ssocketio = require('socket.io').listen(global.config.lport, {'log': false})
 console.log(global.config.server + " is Listening...")
 

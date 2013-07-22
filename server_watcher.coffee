@@ -16,6 +16,7 @@ class Watcher
     @user_directory = Common.path.join(directory, user)
     @file_list = null
     Common.util.ensure_file_exists(@file_list_path)
+    Common.util.ensure_folder_exists(@user_directory)
     console.log("file_list_path: " + @file_list_path)
     @file_list = require ("./" + @file_list_path)
     @socket = socket

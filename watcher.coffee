@@ -7,6 +7,7 @@ exports.start = (synchronizer, directory, file_list_path) ->
 
   directory = Common.path.normalize(directory)
   Common.util.ensure_file_exists(file_list_path)
+  Common.util.ensure_folder_exists(directory)
   files = require (file_list_path)
   
   # returns path of file relative to 'directory'
