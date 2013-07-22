@@ -57,7 +57,9 @@ exports.sync = (remote, watcher, socket) ->
       disk_time = stats.mtime
     else
       disk_time = 0
-    if disk_time == 0 || watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
+    if watcher.get_timestamp(file) == "deleted"
+      if Common.fs.existsSync(filename) then Common.fs.unlinkSync(filename)
+    else if disk_time == 0 || watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
       socket.emit('get', {file: file, token: global.auth_token})
     else if server_time > last_updated && disk_time > last_updated
       new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))

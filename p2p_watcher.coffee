@@ -17,8 +17,9 @@ class P2PWatcher
     
     watcher.createMonitor(@directory, (monitor) =>
       monitor.on("created", (file, stat) =>
-        if Common.path.dirname(file) != @directory
-          synchronizer.send(@relative_path(file), @directory, stat.mtime, stat.mtime)
+        rfile = @relative_path(file)
+        if !@file_list[rfile] && Common.path.dirname(file) != @directory
+          synchronizer.send(rfile, @directory, stat.mtime, stat.mtime)
       )
       monitor.on("changed", (file, curr, prev) =>
         rfile = @relative_path(file)

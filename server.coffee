@@ -174,7 +174,7 @@ socketio.on('connection', (socket) ->
   socket.on('delete', (params) ->
     if (user = Common.auth.valid(params.token))
       path = Common.path.join(global.config.filestore, user, params.file)
-      Common.fs.unlinkSync(path)
+      if Common.path.existsSync(path) then Common.fs.unlinkSync(path)
     else
       socket.emit('unauthorized')
   )

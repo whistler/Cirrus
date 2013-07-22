@@ -74,7 +74,8 @@ socket.on('list', (params) ->
 )
 
 socket.on('delete', (params) ->
-  path = Common.path.join(global.config.directory, params.file)
+  path = Common.path.join(Common.util.expand(global.config.directory), params.file)
+  console.log("delete " + path)
   if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
 )
 
