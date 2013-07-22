@@ -12,51 +12,65 @@ p2pwatcher = new P2PWatcher(p2psynchronizer, global.config.filestore)
 p2psynchronizer.set_watcher(p2pwatcher)
 
 # Connection to other servers
-server1 = global.config.servers[0]
-console.log("Connecting to " + server1.server)
-c1socket = client.connect("http://" +  server1.host + ":" + server1.port, {'transports':['websocket'], 'force new connection': true})
+c1socket = null
+c2socket = null
 
-c1socket.on('connect', () ->
-  console.log('Connected to ' + server1.server)
-  c1socket.emit('fetch_list')
+connect_peer = (csocket, server) ->
+  console.log("Connecting to " + server.server)
+  csocket = client.connect("http://" +  server.host + ":" + server.port, {'transports':['websocket'], 'force new connection': true})
+
+  csocket.on('connect', () ->
+    console.log('Connected to Peer' + server.server)
+    csocket.emit('fetch_list')
   
-  # recieve file updates from client
-  Common.stream(c1socket).on('update', (stream, params) ->
-    p2psynchronizer.get(stream, params, c1socket)
+    # recieve file updates from client
+    Common.stream(csocket).on('update', (stream, params) ->
+      p2psynchronizer.get(stream, params, csocket)
+    )
   )
-)
 
-c1socket.on('delete', (params) ->
-  path = Common.path.join(global.config.filestore, params.file)
-  if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
-)
+  csocket.on('delete', (params) ->
+    path = Common.path.join(global.config.filestore, params.file)
+    if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
+  )
 
-c1socket.on('list',(params)->
-  p2psynchronizer.sync(params.list, p2pwatcher, c1socket)
-)
-
-server2 = global.config.servers[1]
-console.log("Connecting to " + server2.server)
-c2socket = client.connect("http://" +  server2.host + ":" + server2.port, {'transports':['websocket'], 'force new connection': true})
-
-c2socket.on('connect', () ->
-  console.log('Connected to ' + server2.server)
-  c2socket.emit('fetch_list')
+  csocket.on('list',(params)->
+    p2psynchronizer.sync(params.list, p2pwatcher, c1socket)
+  )
   
-  # recieve file updates from client
-  Common.stream(c2socket).on('update', (stream, params) ->
-    p2psynchronizer.get(stream, params, c2socket)
+  csocket.on('error',(err)->
+    reconnect_peer()
   )
-)
 
-c2socket.on('delete', (params) ->
-  path = Common.path.join(global.config.filestore, params.file)
-  if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
-)
+reconnect_peer = (csocket, server) ->
+  csocket.removeAllListeners() if csocket
+  setTimeout(connect_peer(csocket, server), 1000)
 
-c2socket.on('list',(params)->
-  p2psynchronizer.sync(params.list, p2pwatcher, c2socket)
-)
+connect_peer(c1socket, global.config.servers[0])
+connect_peer(c2socket, global.config.servers[1])
+
+# server2 = global.config.servers[1]
+# console.log("Connecting to " + server2.server)
+# c2socket = client.connect("http://" +  server2.host + ":" + server2.port, {'transports':['websocket'], 'force new connection': true})
+# 
+# c2socket.on('connect', () ->
+#   console.log('Connected to ' + server2.server)
+#   c2socket.emit('fetch_list')
+#   
+#   # recieve file updates from client
+#   Common.stream(c2socket).on('update', (stream, params) ->
+#     p2psynchronizer.get(stream, params, c2socket)
+#   )
+# )
+# 
+# c2socket.on('delete', (params) ->
+#   path = Common.path.join(global.config.filestore, params.file)
+#   if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
+# )
+# 
+# c2socket.on('list',(params)->
+#   p2psynchronizer.sync(params.list, p2pwatcher, c2socket)
+# )
 
 # Socket for other servers to connect to
 global.ssocketio = require('socket.io').listen(global.config.lport, {'log': false})
