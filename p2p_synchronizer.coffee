@@ -51,12 +51,12 @@ exports.sync = (remote, watcher, socket) ->
     filename = Common.path.join(Common.util.expand(global.config.filestore), file)
     last_updated = new Date(watcher.get_timestamp(file))
     server_time = new Date(time)
-    try
-      stats = Common.fs.statSync(filename)
-    catch
-      stats = {}
-    disk_time = stats.mtime
-    if watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
+    if Common.fs.exists(filename)
+      stats = Common.fs.statSync(filename) 
+      disk_time = stats.mtime
+    else
+      disk_time = 0
+    if disk_time == 0 || watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
       socket.emit('get', {file: file, token: global.auth_token})
     else if server_time > last_updated && disk_time > last_updated
       new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))
