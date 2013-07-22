@@ -25,7 +25,6 @@ exports.start = (synchronizer, directory, file_list_path) ->
         synchronizer.send(rfile, directory, curr.mtime, prev.mtime)
     )
     monitor.on("removed", (file, stat) ->
-      console.log(file + " removed") if debug
       synchronizer.destroy(relative_path(file))
       set_timestamp(relative_path(file), "deleted")
     )

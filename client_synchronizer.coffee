@@ -9,7 +9,7 @@ watcher = null
 #   basepath: path where file is stored
 #   time: time the file was modified
 exports.send = (file, basepath, time, last_updated) ->
-  console.log("Uploading: " + file)
+  console.log("Uploading Requested File: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
   Common.stream(socket).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
@@ -28,7 +28,7 @@ exports.get = (stream, params, socket) ->
   recv_prev_time = new Date(params.last_updated)
   recv_time = new Date(params.time)
   if my_time > recv_prev_time
-    console.log('unhandled conflict')
+    console.log('Unhandled conflict. This should never happen')
   else if my_time == recv_time
     # already up to date
   else
@@ -62,6 +62,7 @@ exports.sync = (remote, watcher, socket) ->
       Common.fs.renameSync(filename, new_file)
       stat = Common.fs.statSync(new_file)
       watcher.set_timestamp(file, stat.mtime)
+      console.log('Requesting ' + file)
       socket.emit('get', {file: file, token: global.auth_token})
 
       

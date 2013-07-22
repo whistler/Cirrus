@@ -44,12 +44,11 @@ socket.on('get', (params) ->
   stat = Common.fs.statSync(file_path)
   Common.stream(socket).emit('update', stream, {file: params.file, token: global.auth_token, time: stat.mtime}) 
   Common.fs.createReadStream(file_path).pipe(stream)
-  console.log("Uploading: " + file_path)
+  console.log("Uploading Requested File: " + file_path)
 )
 
 # server reports file recieved successfully
 socket.on('update_success', (params)->
-  console.log(params)
   watcher.set_timestamp(params.file, params.time)
 )
 

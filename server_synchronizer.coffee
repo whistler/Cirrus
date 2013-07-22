@@ -41,6 +41,7 @@ exports.sync = (remote, watcher, socket, user) ->
       stat = Common.fs.statSync(new_file) if Common.fs.existsSync(new_file)
       watcher.set_timestamp(file, stat.mtime)
       socket.emit('get', {file: file})
+      console.log('Requesting ' + file)
       
       
 exports.get = (stream, params, user, socket, watcher) ->

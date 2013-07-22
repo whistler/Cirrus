@@ -6,7 +6,6 @@ client = require('socket.io-client')
 
 ####################### SERVER - SERVER(P2P) COMMUNICATION ###################
 
-csockets = []
 p2psynchronizer = require('./p2p_synchronizer') # sends updates to other server
 P2PWatcher = require('./p2p_watcher')
 p2pwatcher = new P2PWatcher(p2psynchronizer, global.config.filestore)
@@ -69,7 +68,6 @@ global.ssocketio.on('connection', (ssocket) ->
   # request from client to get a specific file
   ssocket.on('get', (params) ->
     file_path = Common.path.join(global.config.filestore, params.file)
-    console.log(file_path)
     stream = Common.stream.createStream()
     if Common.fs.existsSync(file_path)
       stat = Common.fs.statSync(file_path)

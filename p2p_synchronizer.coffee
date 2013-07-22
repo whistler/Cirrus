@@ -9,7 +9,7 @@ watcher = null
 #   basepath: path where file is stored
 #   time: time the file was modified
 exports.send = (file, basepath, time, last_updated) ->
-  console.log("Uploading: " + file)
+  console.log("Uploading Requested File: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
   sockets = global.ssocketio.sockets.in('server')
@@ -65,6 +65,7 @@ exports.sync = (remote, watcher, socket) ->
       stat = Common.fs.statSync(new_file)
       watcher.set_timestamp(file, stat.mtime)
       socket.emit('get', {file: file, token: global.auth_token})
+      console.log('Requesting ' + file)
 
       
 exports.set_socket = (sock) ->

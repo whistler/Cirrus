@@ -46,7 +46,7 @@ class Watcher
   set_timestamp: (file, timestamp) ->
     @file_list[file] = timestamp
     Common.util.save_file(@file_list_path, @file_list)
-    console.log "Updated" + file + ": " + timestamp
+    console.log "Updated " + file + ": " + timestamp
   
   get_timestamp: (file) ->
     @file_list[file]
