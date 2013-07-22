@@ -46,13 +46,21 @@ exports.sync = (remote, watcher, socket, user) ->
 exports.get = (stream, params, user, socket, watcher) ->
   filename = Common.path.join(global.config.filestore, user, Common.path.basename(params.file))
   Common.util.ensure_folder_exists(Common.path.join(global.config.filestore, user))
-  stream.on('end', () ->
-    watcher.set_timestamp(params.file, params.time)
-    Common.fs.open(filename, 'a', (err, fd) ->
-      time = new Date(params.time)
-      Common.fs.futimesSync(fd, time, time)
-      socket.emit('update_success', {file: params.file, time: params.time})
+  my_time = new Date(watcher.get_timestamp(filename))
+  recv_prev_time = new Date(params.last_updated)
+  recv_time = new Date(params.time)
+  if my_time > recv_prev_time
+    console.log('Unhandled conflict. This should never happen')
+  else if my_time == recv_time
+    # already up to date
+  else
+    stream.on('end', () ->
+      watcher.set_timestamp(params.file, params.time)
+      Common.fs.open(filename, 'a', (err, fd) ->
+        time = new Date(params.time)
+        Common.fs.futimesSync(fd, time, time)
+        socket.emit('update_success', {file: params.file, time: params.time})
+      )
     )
-  )
-  stream.pipe(Common.fs.createWriteStream(filename))
-  console.log("Downloading: " + filename)
+    stream.pipe(Common.fs.createWriteStream(filename))
+    console.log("Downloading: " + filename)

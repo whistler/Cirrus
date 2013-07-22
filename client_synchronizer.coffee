@@ -33,17 +33,15 @@ exports.get = (stream, params, socket) ->
     # already up to date
   else
     stream.on('end', () ->
+      watcher.set_timestamp(params.file, params.last_updated)
       Common.fs.open(filename, 'a', (err, fd) ->
-        watcher.set_timestamp(params.file, params.last_updated)
         time = new Date(params.last_updated)
         Common.fs.futimesSync(fd, time, time)
+        socket.emit('update_success', {token: global.auth_token, file: params.file, time: params.last_updated})
       )
-      socket.emit('update_success', {token: global.auth_token, file: params.file, time: params.last_updated})
     )
     stream.pipe(Common.fs.createWriteStream(filename))
     console.log('Downloading ' + params.file)
-
-    # conflict
 
 exports.sync = (remote, watcher, socket) ->
   console.log('Sync')
