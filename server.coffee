@@ -69,21 +69,26 @@ global.ssocketio.on('connection', (ssocket) ->
   # request from client to get a specific file
   ssocket.on('get', (params) ->
     file_path = Common.path.join(global.config.filestore, params.file)
+    console.log(file_path)
     stream = Common.stream.createStream()
-    if Common.fs.exists(file_path)
+    if Common.fs.existsSync(file_path)
       stat = Common.fs.statSync(file_path)
       Common.stream(csocket).emit('update', stream, {file: params.file, mtime: stat.mtime}) 
       Common.fs.createReadStream(file_path).pipe(stream)
       console.log("Uploading: " + file_path)
-    else 
-      ssocket.emit('delete',{file:file})
+    else
+      console.log("Requested file does not exist on server") 
+      #ssocket.emit('delete',{file:file})
   )
     
   # send a list of files for user to client
   ssocket.on('fetch_list', (params) ->
     path = Common.path.join(config.filestore)
     Common.util.directory(path, (files) ->
-      ssocket.emit('list', {list:files})
+      list = {}
+      for file, time in files when Common.path.dirname(file) isnt path
+        list[file]=time
+      ssocket.emit('list', {list:list})
     )
   )
 

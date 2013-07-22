@@ -51,7 +51,7 @@ exports.sync = (remote, watcher, socket) ->
     filename = Common.path.join(Common.util.expand(global.config.directory), file)
     last_updated = new Date(watcher.get_timestamp(file))
     server_time = new Date(time)
-    if Common.fs.exists(filename)
+    if Common.fs.existsSync(filename)
       stats = Common.fs.statSync(filename) 
       disk_time = stats.mtime
     else

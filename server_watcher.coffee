@@ -33,7 +33,7 @@ class Watcher
       )
       monitor.on("removed", (file, stat) =>
         synchronizer.destroy(@relative_path(file), @user_directory, @socket)
-        set_timestamp(@relative_path(file), "deleted")
+        @set_timestamp(@relative_path(file), "deleted")
       )
     )
 

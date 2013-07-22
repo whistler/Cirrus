@@ -27,7 +27,7 @@ exports.sync = (remote, watcher, socket, user) ->
     filename = Common.path.join(Common.path.normalize(global.config.filestore), user, file)
     last_updated = new Date(watcher.get_timestamp(file))
     server_time = new Date(time)
-    if Common.fs.exists(filename)
+    if Common.fs.existsSync(filename)
       stats = Common.fs.statSync(filename) 
       disk_time = stats.mtime
     else
@@ -38,7 +38,7 @@ exports.sync = (remote, watcher, socket, user) ->
       new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))
       socket.emit('message',"Conflict: File " + file + " has also been changed on server. Renamed to " + new_file + "on server")
       Common.fs.renameSync(filename, new_file)
-      stat = Common.fs.statSync(new_file) if Common.fs.exists(new_file)
+      stat = Common.fs.statSync(new_file) if Common.fs.existsSync(new_file)
       watcher.set_timestamp(file, stat.mtime)
       socket.emit('get', {file: file})
       
