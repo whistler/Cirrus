@@ -39,12 +39,14 @@ connect_peer = (csocket, server) ->
   )
   
   csocket.on('error',(err)->
-    reconnect_peer()
+    reconnect_peer(csocket, server)
   )
 
 reconnect_peer = (csocket, server) ->
   csocket.removeAllListeners() if csocket
-  setTimeout(connect_peer(csocket, server), 1000)
+  setTimeout(()->
+    connect_peer(csocket, server)
+  ,5000)
 
 connect_peer(c1socket, global.config.servers[0])
 connect_peer(c2socket, global.config.servers[1])
