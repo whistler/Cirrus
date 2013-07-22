@@ -75,7 +75,7 @@ socket.on('list', (params) ->
 
 socket.on('delete', (params) ->
   path = Common.path.join(global.config.directory, params.file)
-  Common.fs.unlinkSync(path)
+  if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
 )
 
 socket.on('message', (params)->

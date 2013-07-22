@@ -26,7 +26,7 @@ exports.start = (synchronizer, directory, file_list_path) ->
     )
     monitor.on("removed", (file, stat) ->
       synchronizer.destroy(relative_path(file))
-      set_timestamp(relative_path(file), "deleted")
+      exports.set_timestamp(relative_path(file), "deleted")
     )
   )
 

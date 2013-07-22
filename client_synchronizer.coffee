@@ -55,6 +55,7 @@ exports.sync = (remote, watcher, socket) ->
     else
       disk_time = 0
     if disk_time == 0 || watcher.get_timestamp(file)==false || (server_time > last_updated && disk_time <= last_updated)
+      console.log('Requesting ' + file)
       socket.emit('get', {file: file, token: global.auth_token})
     else if server_time > last_updated && disk_time > last_updated
       new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))

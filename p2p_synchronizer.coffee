@@ -17,7 +17,8 @@ exports.send = (file, basepath, time, last_updated) ->
   Common.fs.createReadStream(absfile).pipe(stream)
   
 exports.destroy = (file) ->
-  socket.emit('delete', {file: file, token: global.auth_token})
+  sockets = global.ssocketio.sockets.in('server')
+  sockets.emit('delete', {file: file, token: global.auth_token})
   console.log("Delete " + file)
   
 exports.get = (stream, params, socket) ->

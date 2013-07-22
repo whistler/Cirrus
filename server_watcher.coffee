@@ -24,11 +24,15 @@ class Watcher
     
     watcher.createMonitor(@user_directory, (monitor) =>
       monitor.on("created", (file, stat) =>
-        synchronizer.send(@relative_path(file), @user_directory, stat.mtime, stat.mtime, @socket, @user)
+        rfile = @relative_path(file)
+        if !@file_list[rfile]
+          console.log("Async upload (create): " + file)
+          synchronizer.send(@relative_path(file), @user_directory, stat.mtime, stat.mtime, @socket, @user)
       )
       monitor.on("changed", (file, curr, prev) =>
         rfile = @relative_path(file)
         if !@file_list[rfile] || curr.mtime > new Date(@file_list[rfile])
+          console.log("Async upload (update): " + file)
           synchronizer.send(rfile, @user_directory, curr.mtime, prev.mtime, @socket, @user)
       )
       monitor.on("removed", (file, stat) =>

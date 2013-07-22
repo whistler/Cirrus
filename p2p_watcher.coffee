@@ -29,7 +29,7 @@ class P2PWatcher
       monitor.on("removed", (file, stat) =>
         if Common.path.dirname(file) != @directory
           synchronizer.destroy(@relative_path(file), @directory)
-          set_timestamp(@relative_path(file), "deleted")
+          @set_timestamp(@relative_path(file), "deleted")
       )
     )
 

@@ -28,7 +28,7 @@ c1socket.on('connect', () ->
 
 c1socket.on('delete', (params) ->
   path = Common.path.join(global.config.filestore, params.file)
-  Common.fs.unlinkSync(path)
+  if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
 )
 
 c1socket.on('list',(params)->
@@ -51,7 +51,7 @@ c2socket.on('connect', () ->
 
 c2socket.on('delete', (params) ->
   path = Common.path.join(global.config.filestore, params.file)
-  Common.fs.unlinkSync(path)
+  if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
 )
 
 c2socket.on('list',(params)->
