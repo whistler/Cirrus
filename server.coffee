@@ -29,7 +29,7 @@ c1socket.on('connect', () ->
 
 c1socket.on('delete', (params) ->
   path = Common.path.join(global.config.filestore, params.file)
-  Common.fs.fs.unlinkSync(path)
+  Common.fs.unlinkSync(path)
 )
 
 c1socket.on('list',(params)->
@@ -52,7 +52,7 @@ c2socket.on('connect', () ->
 
 c2socket.on('delete', (params) ->
   path = Common.path.join(global.config.filestore, params.file)
-  Common.fs.fs.unlinkSync(path)
+  Common.fs.unlinkSync(path)
 )
 
 c2socket.on('list',(params)->
@@ -176,7 +176,7 @@ socketio.on('connection', (socket) ->
   socket.on('delete', (params) ->
     if (user = Common.auth.valid(params.token))
       path = Common.path.join(global.config.filestore, user, params.file)
-      Common.fs.fs.unlinkSync(path)
+      Common.fs.unlinkSync(path)
     else
       socket.emit('unauthorized')
   )
