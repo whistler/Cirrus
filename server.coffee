@@ -50,10 +50,13 @@ global.ssocketio.on('connection', (ssocket) ->
   ssocket.on('get', (params) ->
     file_path = Common.path.join(global.config.filestore, params.file)
     stream = Common.stream.createStream()
-    stat = Common.fs.statSync(file_path)
-    Common.stream(csocket).emit('update', stream, {file: params.file, mtime: stat.mtime}) 
-    Common.fs.createReadStream(file_path).pipe(stream)
-    console.log("Uploading: " + file_path)
+    if Common.fs.exists(file_path)
+      stat = Common.fs.statSync(file_path)
+      Common.stream(csocket).emit('update', stream, {file: params.file, mtime: stat.mtime}) 
+      Common.fs.createReadStream(file_path).pipe(stream)
+      console.log("Uploading: " + file_path)
+    else 
+      ssocket.emit('delete',{file:file})
   )
     
   # send a list of files for user to client

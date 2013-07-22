@@ -17,17 +17,17 @@ class P2PWatcher
     
     watcher.createMonitor(@directory, (monitor) =>
       monitor.on("created", (file, stat) =>
-        if Common.path.dirname(@relative_path(file)) != @directory
+        if Common.path.dirname(file) != @directory
           synchronizer.send(@relative_path(file), @directory, stat.mtime, stat.mtime)
       )
       monitor.on("changed", (file, curr, prev) =>
         rfile = @relative_path(file)
-        if Common.path.dirname(rfile) != @directory
+        if Common.path.dirname(file) != @directory
           if !@file_list[rfile] || curr.mtime > new Date(@file_list[rfile])
             synchronizer.send(rfile, @directory, curr.mtime, prev.mtime)
       )
       monitor.on("removed", (file, stat) =>
-        if Common.path.dirname(rfile) != @directory
+        if Common.path.dirname(file) != @directory
           synchronizer.destroy(@relative_path(file), @directory)
           set_timestamp(@relative_path(file), "deleted")
       )
