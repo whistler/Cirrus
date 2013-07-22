@@ -9,7 +9,7 @@ watcher = null
 #   basepath: path where file is stored
 #   time: time the file was modified
 exports.send = (file, basepath, time, last_updated) ->
-  console.log("Uploading Requested File: " + file)
+  console.log("[P2P] Uploading Requested File: " + file)
   absfile = Common.path.join(basepath,file)
   stream = Common.stream.createStream()
   sockets = global.ssocketio.sockets.in('server')
@@ -19,7 +19,7 @@ exports.send = (file, basepath, time, last_updated) ->
 exports.destroy = (file) ->
   sockets = global.ssocketio.sockets.in('server')
   sockets.emit('delete', {file: file, token: global.auth_token})
-  console.log("Delete " + file)
+  console.log("[P2P] Delete " + file)
   
 exports.get = (stream, params, socket) ->
   filename = Common.path.join(global.config.filestore, params.file)
@@ -29,7 +29,7 @@ exports.get = (stream, params, socket) ->
   recv_prev_time = new Date(params.last_updated)
   recv_time = new Date(params.time)
   if my_time > recv_prev_time
-    console.log('unhandled conflict')
+    console.log('[P2P] unhandled conflict')
   else if my_time == recv_time
     # already up to date
   else
@@ -42,12 +42,12 @@ exports.get = (stream, params, socket) ->
       socket.emit('update_success', {token: global.auth_token, file: params.file, time: params.last_updated})
     )
     stream.pipe(Common.fs.createWriteStream(filename))
-    console.log('Downloading ' + params.file)
+    console.log('[P2P] Downloading ' + params.file)
 
     # conflict
 
 exports.sync = (remote, watcher, socket) ->
-  console.log('Sync')
+  console.log('[P2P] Sync')
   for file, time of remote
     filename = Common.path.join(Common.util.expand(global.config.filestore), file)
     last_updated = new Date(watcher.get_timestamp(file))
@@ -63,12 +63,12 @@ exports.sync = (remote, watcher, socket) ->
       socket.emit('get', {file: file, token: global.auth_token})
     else if server_time > last_updated && disk_time > last_updated
       new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))
-      console.log("Conflict: File " + file + "has also been changed on server. Renamed to " + new_file)
+      console.log("[P2P] Conflict: File " + file + "has also been changed on server. Renamed to " + new_file)
       Common.fs.renameSync(filename, new_file)
       stat = Common.fs.statSync(new_file)
       watcher.set_timestamp(file, stat.mtime)
       socket.emit('get', {file: file, token: global.auth_token})
-      console.log('Requesting ' + file)
+      console.log('[P2P] Requesting ' + file)
 
       
 exports.set_socket = (sock) ->
