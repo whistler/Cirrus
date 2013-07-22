@@ -1,4 +1,4 @@
-# Sends updates to the other end of the socket
+# Processes synchronization for the client program
 Common = require './common'
 
 socket = null
@@ -15,11 +15,12 @@ exports.send = (file, basepath, time, last_updated) ->
   Common.stream(socket).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
   Common.fs.createReadStream(absfile).pipe(stream)
 
-  
+# Tell the server that a file has been deleted
 exports.destroy = (file) ->
   socket.emit('delete', {file: file, token: global.auth_token})
   console.log("Delete " + file)
   
+# Recieve file from server
 exports.get = (stream, params, socket) ->
   filename = Common.path.join(Common.util.expand(global.config.directory), params.file)
   path = Common.path.dirname(filename)
@@ -43,6 +44,8 @@ exports.get = (stream, params, socket) ->
     stream.pipe(Common.fs.createWriteStream(filename))
     console.log('Downloading ' + params.file)
 
+# From a list of files on the server request the ones not up to date
+# Rename file if there is a conflict
 exports.sync = (remote, watcher, socket) ->
   console.log('Sync')
   for file, time of remote
@@ -68,9 +71,10 @@ exports.sync = (remote, watcher, socket) ->
       console.log('Requesting ' + file)
       socket.emit('get', {file: file, token: global.auth_token})
 
-      
+# Set the socket to use 
 exports.set_socket = (sock) ->
   socket = sock
-  
+
+# Set the watcher to use
 exports.set_watcher = (watch) ->
   watcher = watch

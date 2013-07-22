@@ -13,13 +13,14 @@ exports.send = (file, basepath, time, last_updated, socket, user) ->
   Common.fs.createReadStream(complete_path).pipe(stream)
   console.log "Sending " + file + " to " + user + " on socket " + socket.id
 
+# 
 exports.destroy = (file, basepath, socket) ->
   socket.emit('delete', {file: file})
   console.log("Delete " + file)
 
 # compares remote and local list of (file, timestamp) pairs, fetches
 # the ones needing updates
-# note: client can only delete files when connected
+# note: due to a bug filenames for deleted files cannot be reused at the moment
 exports.sync = (remote, watcher, socket, user) ->
   console.log('Sync')
   console.log(remote)
@@ -47,7 +48,7 @@ exports.sync = (remote, watcher, socket, user) ->
       socket.emit('get', {file: file})
       console.log('Requesting ' + file)
       
-      
+# recieve file from client      
 exports.get = (stream, params, user, socket, watcher) ->
   filename = Common.path.join(global.config.filestore, user, Common.path.basename(params.file))
   Common.util.ensure_folder_exists(Common.path.join(global.config.filestore, user))

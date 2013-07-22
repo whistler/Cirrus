@@ -1,4 +1,4 @@
-# Sends updates to the other end of the socket
+# Synchronizies files between two server nodes
 Common = require './common'
 
 socket = null
@@ -15,12 +15,14 @@ exports.send = (file, basepath, time, last_updated) ->
   sockets = global.ssocketio.sockets.in('server')
   Common.stream(sockets).emit('update', stream, {file: file, token: global.auth_token, time: time, last_updated: last_updated}) 
   Common.fs.createReadStream(absfile).pipe(stream)
-  
+
+# Delete a file on the remote node
 exports.destroy = (file) ->
   sockets = global.ssocketio.sockets.in('server')
   sockets.emit('delete', {file: file, token: global.auth_token})
   console.log("[P2P] Delete " + file)
-  
+
+# Recieve a file from the remote node, rename if conflict detected
 exports.get = (stream, params, socket) ->
   filename = Common.path.join(global.config.filestore, params.file)
   path = Common.path.dirname(filename)
@@ -44,8 +46,7 @@ exports.get = (stream, params, socket) ->
     stream.pipe(Common.fs.createWriteStream(filename))
     console.log('[P2P] Downloading ' + params.file)
 
-    # conflict
-
+# Ask server for files that have been changed
 exports.sync = (remote, watcher, socket) ->
   console.log('[P2P] Sync')
   for file, time of remote
@@ -70,9 +71,10 @@ exports.sync = (remote, watcher, socket) ->
       socket.emit('get', {file: file, token: global.auth_token})
       console.log('[P2P] Requesting ' + file)
 
-      
+# Set socket to use
 exports.set_socket = (sock) ->
   socket = sock
-  
+
+# Set watcher to use
 exports.set_watcher = (watch) ->
   watcher = watch

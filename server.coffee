@@ -11,10 +11,11 @@ P2PWatcher = require('./p2p_watcher')
 p2pwatcher = new P2PWatcher(p2psynchronizer, global.config.filestore)
 p2psynchronizer.set_watcher(p2pwatcher)
 
-# Connection to other servers
+# Connection to other nodes
 c1socket = null
 c2socket = null
 
+# open a socket called csocket to server and use it for fetching updates
 connect_peer = (csocket, server) ->
   console.log("Connecting to " + server.server)
   csocket = client.connect("http://" +  server.host + ":" + server.port, {'transports':['websocket'], 'force new connection': true})
@@ -42,39 +43,20 @@ connect_peer = (csocket, server) ->
     reconnect_peer(csocket, server)
   )
 
+# retry opening socket (in the function above) if it fails
 reconnect_peer = (csocket, server) ->
   csocket.removeAllListeners() if csocket
   setTimeout(()->
     connect_peer(csocket, server)
   ,5000)
 
+# open socket connections to the two other servers
 connect_peer(c1socket, global.config.servers[0])
 connect_peer(c2socket, global.config.servers[1])
 
-# server2 = global.config.servers[1]
-# console.log("Connecting to " + server2.server)
-# c2socket = client.connect("http://" +  server2.host + ":" + server2.port, {'transports':['websocket'], 'force new connection': true})
-# 
-# c2socket.on('connect', () ->
-#   console.log('Connected to ' + server2.server)
-#   c2socket.emit('fetch_list')
-#   
-#   # recieve file updates from client
-#   Common.stream(c2socket).on('update', (stream, params) ->
-#     p2psynchronizer.get(stream, params, c2socket)
-#   )
-# )
-# 
-# c2socket.on('delete', (params) ->
-#   path = Common.path.join(global.config.filestore, params.file)
-#   if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
-# )
-# 
-# c2socket.on('list',(params)->
-#   p2psynchronizer.sync(params.list, p2pwatcher, c2socket)
-# )
 
-# Socket for other servers to connect to
+
+# Socket for other server nodes to connect to
 global.ssocketio = require('socket.io').listen(global.config.lport, {'log': false})
 console.log(global.config.server + " is Listening...")
 

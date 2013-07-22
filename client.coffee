@@ -1,4 +1,4 @@
-# Cirrus Client
+# Cirrus Client Program
 global.app = "client"
 global.config = require('./config/client')
 global.serv = global.config.servers[global.config.current_server]
@@ -33,11 +33,11 @@ start_client = () ->
     )
   )
 
+  # reconnect on disconnect or error
   socket.on('disconnect', () ->
     console.log('Server Disconnected')
     next_server()
   )
-
   socket.on('error', (err) ->
     next_server()
     console.log("Socket Error")
@@ -79,18 +79,16 @@ start_client = () ->
     synchronizer.sync(params.list, watcher, socket)
   )
 
+  # delete the file removed on the server
   socket.on('delete', (params) ->
     path = Common.path.join(Common.util.expand(global.config.directory), params.file)
     console.log("delete " + path)
     if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
   )
 
+  # display message from server
   socket.on('message', (params)->
     console.log (params)
-  )
-
-  socket.on('connect_failed', ()->
-    console.log ('connection failed')
   )
 
   # Event triggered on successful authentication, send and recieve updates during downtime
@@ -101,7 +99,8 @@ start_client = () ->
   )
 
 start_client()
-# Connect to next server
+
+# Connect to next server (used when disconnected or unable to connect)
 next_server = () ->
   if !socket.connected
     socket.removeAllListeners() if socket
