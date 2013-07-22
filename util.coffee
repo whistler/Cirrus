@@ -30,8 +30,6 @@ exports.save_config = (config) ->
   fs.writeFile('./config/client.json', data, (err) ->
     if err
       console.log('There has been an error saving your configuration data.' + err.message)
-    else
-      console.log('Configuration saved successfully.')
   )
 
 # Callsback with a list of files in `path` with their last modified times
