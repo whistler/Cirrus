@@ -47,10 +47,11 @@ start_client = () ->
   socket.on('get', (params) ->
     file_path = Common.path.join(Common.util.expand(global.config.directory), params.file)
     stream = Common.stream.createStream()
-    stat = Common.fs.statSync(file_path)
-    Common.stream(socket).emit('update', stream, {file: params.file, token: global.auth_token, time: stat.mtime}) 
-    Common.fs.createReadStream(file_path).pipe(stream)
-    console.log("Uploading Requested File: " + file_path)
+    if Common.fs.existsSync(file_path)
+      stat = Common.fs.statSync(file_path)
+      Common.stream(socket).emit('update', stream, {file: params.file, token: global.auth_token, time: stat.mtime}) 
+      Common.fs.createReadStream(file_path).pipe(stream)
+      console.log("Uploading Requested File: " + file_path)
   )
 
   # server reports file recieved successfully
