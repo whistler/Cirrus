@@ -62,3 +62,7 @@ exports.exit_if_missing = (file, message) ->
       console.log('Error: ' + message)
       process.exit(-1)
   )
+  
+exports.moveSync = (from, to) ->
+  data = fs.readFileSync(from)
+  fs.writeFileSync(to, data)

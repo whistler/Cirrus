@@ -42,7 +42,7 @@ exports.sync = (remote, watcher, socket, user) ->
     else if server_time > last_updated && disk_time > last_updated
       new_file = Common.path.join(Common.path.dirname(filename), "conflict_" + Common.path.basename(filename))
       socket.emit('message',"Conflict: File " + file + " has also been changed on server. Renamed to " + new_file + "on server")
-      Common.fs.renameSync(filename, new_file)
+      Common.util.moveSync(filename, new_file)
       stat = Common.fs.statSync(new_file) if Common.fs.existsSync(new_file)
       watcher.set_timestamp(file, stat.mtime)
       socket.emit('get', {file: file})

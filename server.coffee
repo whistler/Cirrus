@@ -122,6 +122,7 @@ socketio.on('connection', (socket) ->
       socket.emit('authenticated', token)
       console.log(params.username + " logged in")
       watcher = new Watcher(synchronizer, global.config.filestore, socket, params.username)
+      socket.emit('fetch_list')
     else 
       socket.emit('unauthorized')
   )
@@ -156,7 +157,6 @@ socketio.on('connection', (socket) ->
       path = Common.path.join(config.filestore, user)
       Common.util.directory(path, (files) ->
         socket.emit('list', {list: files})
-        socket.emit('fetch_list')
       )
     else
       socket.emit('unauthorized')
@@ -173,7 +173,7 @@ socketio.on('connection', (socket) ->
   socket.on('delete', (params) ->
     if (user = Common.auth.valid(params.token))
       path = Common.path.join(global.config.filestore, user, params.file)
-      if Common.path.existsSync(path) then Common.fs.unlinkSync(path)
+      if Common.fs.existsSync(path) then Common.fs.unlinkSync(path)
     else
       socket.emit('unauthorized')
   )
